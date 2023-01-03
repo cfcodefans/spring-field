@@ -3,7 +3,7 @@
     <Appenders>
         <Console name="Console" target="SYSTEM_OUT">
             <!-- refers to https://logging.apache.org/log4j/2.x/manual/layouts.html -->
-            <PatternLayout pattern="[%d{yyyy-MM-dd'T'HH:mm:ss.SSSZ}] [%t]\t%p\t%c{2}.%M(%L):\t%msg%n\n"/>
+            <PatternLayout pattern="[%d{yyyy-MM-dd'T'HH:mm:ss.SSSZ}] [%t]\t%p\t%c{2}.%M[%L]:\t%msg%n\n"/>
         </Console>
     </Appenders>
     <Loggers>
