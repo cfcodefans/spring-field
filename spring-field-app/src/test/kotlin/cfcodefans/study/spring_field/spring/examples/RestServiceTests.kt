@@ -1,6 +1,7 @@
 package cfcodefans.study.spring_field.spring.examples
 
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.extension.ExtendWith
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
@@ -8,6 +9,7 @@ import org.springframework.boot.SpringApplication
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc
 import org.springframework.boot.test.context.SpringBootTest
+import org.springframework.test.context.junit.jupiter.SpringExtension
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers.print
@@ -51,7 +53,8 @@ fun main(args: Array<String>) {
  * refers to https://spring.io/guides/gs/rest-service/
  * https://github.com/spring-guides/gs-rest-service/blob/main/complete/src/test/java/com/example/restservice/GreetingControllerTests.java
  */
-@SpringBootTest
+@ExtendWith(SpringExtension::class)
+@SpringBootTest(classes = [GSRestServiceApp::class])
 @AutoConfigureMockMvc
 open class RestServiceTests {
     companion object {
