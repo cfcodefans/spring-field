@@ -44,7 +44,7 @@ open class ConsumingRestTests {
 
     @Test
     fun testApiCall() {
-        val quoteRe: Quote = restTemplate.getForObject("http://localhost:8080/api/random", Quote::class.java)
+        val quoteRe: Quote? = restTemplate.getForObject("http://localhost:8080/api/random", Quote::class.java)
         log.info(quoteRe.toString())
     }
 
