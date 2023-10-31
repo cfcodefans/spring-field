@@ -38,7 +38,7 @@ open class DatabaseLoader {
             quoterRepo.save(Quote(quote = "With Boot you deploy everywhere you can find a JVM basically."))
             quoterRepo.save(Quote(quote = "Spring has come quite a ways in addressing developer enjoyment and ease of use since the last time I built an application using it."))
             quoterRepo.save(Quote(quote =
-                                  "Previous to Spring Boot, I remember XML hell, confusing set up, and many hours of frustration."))
+            "Previous to Spring Boot, I remember XML hell, confusing set up, and many hours of frustration."))
             quoterRepo.save(Quote(quote = "Spring Boot solves this problem. It gets rid of XML and wires up common components for me, so I don't have to spend hours scratching my head just to figure out how it's all pieced together."))
             quoterRepo.save(Quote(quote = "It embraces convention over configuration, providing an experience on par with frameworks that excel at early stage development, such as Ruby on Rails."))
             quoterRepo.save(Quote(quote = "The real benefit of Boot, however, is that it's just Spring. That means any direction the code takes, regardless of complexity, I know it's a safe bet."))
@@ -110,10 +110,10 @@ open class SwaggerCfg {
         .forCodeGeneration(true)
         .protocols(setOf("http"))
         .apiInfo(ApiInfoBuilder()
-                     .title("spring-field-app")
-                     .description("spring-field-app")
-                     .version("0.0.1")
-                     .build())
+            .title("spring-field-app")
+            .description("spring-field-app")
+            .version("0.0.1")
+            .build())
         //        .apply {
         //            val tr = TypeResolver()
         //            AdminConstants.ADMIN_API_MODEL_CLZZ.map { tr.resolve(it) }.forEach { this.additionalModels(it) }
