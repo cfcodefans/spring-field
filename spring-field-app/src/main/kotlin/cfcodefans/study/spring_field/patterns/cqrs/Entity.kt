@@ -21,4 +21,3 @@ data class User(var userId: String,
 data class UserAddress(var addressByRegion: MutableMap<String, MutableSet<Address>> = HashMap())
 
 data class UserContact(var contactByType: MutableMap<String, MutableSet<Contact>> = HashMap())
-
