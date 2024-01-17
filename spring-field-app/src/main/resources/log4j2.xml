@@ -10,6 +10,9 @@
         <Logger name="org.springframework" level="INFO">
             <AppenderRef ref="Console"/>
         </Logger>
+        <Logger name="springfox" level="INFO">
+            <AppenderRef ref="Console"/>
+        </Logger>
         <Root level="INFO">
             <AppenderRef ref="Console"/>
         </Root>

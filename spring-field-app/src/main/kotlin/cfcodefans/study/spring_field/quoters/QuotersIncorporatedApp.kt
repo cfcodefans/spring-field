@@ -13,6 +13,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.context.annotation.EnableAspectJAutoProxy
+import org.springframework.context.annotation.PropertySource
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.scheduling.annotation.EnableAsync
@@ -21,10 +22,6 @@ import org.springframework.stereotype.Repository
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RestController
-import springfox.documentation.builders.ApiInfoBuilder
-import springfox.documentation.builders.PathSelectors
-import springfox.documentation.spi.DocumentationType
-import springfox.documentation.spring.web.plugins.Docket
 import java.util.*
 import kotlin.random.Random
 
@@ -92,8 +89,9 @@ interface QuoteRepo : JpaRepository<Quote, Long>
 
 data class QuoteResource(val quote: Quote, val type: String)
 
-@SpringBootApplication
-@EnableAutoConfiguration
+@SpringBootApplication(scanBasePackages = [BASE_PACKAGE])
+@PropertySource("classpath:/application-lab.properties")
+@EnableAutoConfiguration(excludeName = ["org.springframework.boot.autoconfigure.gson.GsonAutoConfiguration"])
 @EnableAsync
 @EnableAspectJAutoProxy(proxyTargetClass = false)
 @EnableScheduling
@@ -103,28 +101,26 @@ open class QuotersIncorporatedApp {
     }
 }
 
-@Configuration
-open class SwaggerCfg {
-    @Bean(name = ["swagger"])
-    open fun createRestApi(): Docket = Docket(DocumentationType.OAS_30)
-        .forCodeGeneration(true)
-        .protocols(setOf("http"))
-        .apiInfo(ApiInfoBuilder()
-            .title("spring-field-app")
-            .description("spring-field-app")
-            .version("0.0.1")
-            .build())
-        //        .apply {
-        //            val tr = TypeResolver()
-        //            AdminConstants.ADMIN_API_MODEL_CLZZ.map { tr.resolve(it) }.forEach { this.additionalModels(it) }
-        //        }
-        .select()
-        //        .apis(RequestHandlerSelectors.basePackage("${Constants.BASE_PACKAGE}.admin.ctrl")
-        //                  .or(RequestHandlerSelectors.basePackage("${Constants.BASE_PACKAGE}.common.ctrl"))
-        //                  .or(RequestHandlerSelectors.basePackage("${Constants.BASE_PACKAGE}.coingate.ctrl")))
-        .paths(PathSelectors.any())
-        .build()
-}
+private const val BASE_PACKAGE = "cfcodefans.study.spring_field.quoters"
+
+//TODO https://springdoc.org/#swagger-ui-configuration
+//@Configuration
+//open class SwaggerCfg {
+//    @Bean(name = ["swagger"])
+//    open fun createRestApi(): Docket = Docket(DocumentationType.OAS_30)
+//        .forCodeGeneration(true)
+//        .protocols(setOf("http"))
+//        .apiInfo(ApiInfoBuilder()
+//            .title("spring-field-app")
+//            .description("spring-field-app")
+//            .version("0.0.1")
+//            .build())
+//        .select()
+//        .apis(RequestHandlerSelectors.basePackage(BASE_PACKAGE))
+//        .paths(PathSelectors.any())
+//        .build()
+//        .also { log.info(it.toString()) }
+//}
 
 fun main(args: Array<String>) {
     SpringApplication.run(QuotersIncorporatedApp::class.java, *args)
