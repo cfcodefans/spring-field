@@ -8,6 +8,8 @@ import org.springframework.boot.autoconfigure.EnableAutoConfiguration
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.autoconfigure.gson.GsonAutoConfiguration
 import org.springframework.boot.builder.SpringApplicationBuilder
+import org.springframework.boot.web.client.RestTemplateBuilder
+import org.springframework.context.annotation.Bean
 import org.springframework.stereotype.Component
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RestController
@@ -34,7 +36,7 @@ object AggregatorMicroServices {
             log.error("IOException Occurred", e)
             null
         } catch (e: InterruptedException) {
-            log.error("InterruptedException  Occurred", e)
+            log.error("InterruptedException Occurred", e)
             null
         }
     }
@@ -42,14 +44,14 @@ object AggregatorMicroServices {
     @Component
     open class ProductInventoryClient : () -> Int? {
         companion object {
-            private val log: Logger = LoggerFactory.getLogger(ProductInfoClient::class.java)
+            private val log: Logger = LoggerFactory.getLogger(ProductInventoryClient::class.java)
         }
 
         @Autowired
         lateinit var restTempl: RestTemplate
         override fun invoke(): Int? = try {
             restTempl
-                .getForEntity<String>("http://localhost:51515/inventories")
+                .getForEntity<String>("http://localhost:51516/inventories")
                 .body
                 ?.ifBlank { null }
                 ?.toInt()
@@ -69,10 +71,10 @@ object AggregatorMicroServices {
         }
 
         @Autowired
-        lateinit var infoClient: () -> String
+        lateinit var infoClient: () -> String?
 
         @Autowired
-        lateinit var inventoryClient: () -> Int
+        lateinit var inventoryClient: () -> Int?
 
         @GetMapping("/product")
         open fun getProduct(): Product = Product(
@@ -82,18 +84,75 @@ object AggregatorMicroServices {
 
     @SpringBootApplication
     @EnableAutoConfiguration(exclude = [GsonAutoConfiguration::class])
-    open class App {}
+    open class AggregatorMicroServicesApp {
+        @Bean
+        open fun restTempl(): RestTemplate = RestTemplateBuilder().build()
+    }
 
     @JvmStatic
     fun main(args: Array<String>) {
         SpringApplicationBuilder()
             .web(WebApplicationType.SERVLET)
-            .sources(App::class.java,
+            .sources(AggregatorMicroServicesApp::class.java,
                     ProductInfoClient::class.java,
                     ProductInventoryClient::class.java,
                     Aggregator::class.java,
                     RestTemplate::class.java)
             .properties(mapOf("server.port" to "50000"))
+            .run()
+    }
+}
+
+object InfoServices {
+    @RestController
+    open class InfoCtrl {
+
+        companion object {
+            private val log: Logger = LoggerFactory.getLogger(InfoCtrl::class.java)
+        }
+
+        @GetMapping("/information")
+        open fun getProductTitle(): String = "The Product Title."
+    }
+
+    @SpringBootApplication
+    @EnableAutoConfiguration(exclude = [GsonAutoConfiguration::class])
+    open class InfoServicesApp {}
+
+    @JvmStatic
+    fun main(args: Array<String>) {
+        SpringApplicationBuilder()
+            .web(WebApplicationType.SERVLET)
+            .sources(InfoServicesApp::class.java,
+                    InfoCtrl::class.java)
+            .properties(mapOf("server.port" to "51515")) //
+            .run()
+    }
+}
+
+object InventoryServices {
+    @RestController
+    open class InventoryCtrl {
+
+        companion object {
+            private val log: Logger = LoggerFactory.getLogger(InventoryServices::class.java)
+        }
+
+        @GetMapping("/inventories")
+        open fun getProductInventories(): Int = 5
+    }
+
+    @SpringBootApplication
+    @EnableAutoConfiguration(exclude = [GsonAutoConfiguration::class])
+    open class InventoryServicesApp {}
+
+    @JvmStatic
+    fun main(args: Array<String>) {
+        SpringApplicationBuilder()
+            .web(WebApplicationType.SERVLET)
+            .sources(InventoryServicesApp::class.java,
+                    InventoryCtrl::class.java)
+            .properties(mapOf("server.port" to "51516")) //
             .run()
     }
 }
