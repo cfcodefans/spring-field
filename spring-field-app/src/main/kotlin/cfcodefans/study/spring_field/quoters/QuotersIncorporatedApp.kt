@@ -1,5 +1,6 @@
 package cfcodefans.study.spring_field.quoters
 
+import jakarta.annotation.PostConstruct
 import jakarta.persistence.Entity
 import jakarta.persistence.GeneratedValue
 import jakarta.persistence.Id
@@ -23,6 +24,7 @@ import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RestController
 import springfox.documentation.builders.ApiInfoBuilder
 import springfox.documentation.builders.PathSelectors
+import springfox.documentation.builders.RequestHandlerSelectors
 import springfox.documentation.spi.DocumentationType
 import springfox.documentation.spring.web.plugins.Docket
 import java.util.*
@@ -105,6 +107,15 @@ open class QuotersIncorporatedApp {
 
 @Configuration
 open class SwaggerCfg {
+    companion object {
+        val log: Logger = LoggerFactory.getLogger(SwaggerCfg::class.java)
+    }
+
+    @PostConstruct
+    fun init() {
+        log.info("\n\t Swagger Cfg is initializing...")
+    }
+
     @Bean(name = ["swagger"])
     open fun createRestApi(): Docket = Docket(DocumentationType.OAS_30)
         .forCodeGeneration(true)
@@ -119,7 +130,7 @@ open class SwaggerCfg {
         //            AdminConstants.ADMIN_API_MODEL_CLZZ.map { tr.resolve(it) }.forEach { this.additionalModels(it) }
         //        }
         .select()
-        //        .apis(RequestHandlerSelectors.basePackage("${Constants.BASE_PACKAGE}.admin.ctrl")
+        .apis(RequestHandlerSelectors.basePackage("cfcodefans.study.spring_field.quoters"))
         //                  .or(RequestHandlerSelectors.basePackage("${Constants.BASE_PACKAGE}.common.ctrl"))
         //                  .or(RequestHandlerSelectors.basePackage("${Constants.BASE_PACKAGE}.coingate.ctrl")))
         .paths(PathSelectors.any())
