@@ -427,5 +427,28 @@ object Caching {
             appManager.find("004")
             log.info(appManager.toString())
         }
+
+        log.info("\n".repeat(5))
+
+        run {
+            log.info("# CachingPolicy.ASIDE")
+
+            appManager.initCachingPolicy(CachingPolicy.ASIDE)
+            log.info(appManager.toString())
+
+            var userAcc3: UserAccount = UserAccount("003", "Adam", "He likes food.")
+            var userAcc4: UserAccount = UserAccount("004", "Rita", "She hates cats.")
+            var userAcc5: UserAccount = UserAccount("005", "Isaac", "He is allergic to mustard.")
+
+            appManager.save(userAcc3)
+            appManager.save(userAcc4)
+            appManager.save(userAcc5)
+
+            log.info(appManager.toString())
+            appManager.find("003")
+            log.info(appManager.toString())
+            appManager.find("004")
+            log.info(appManager.toString())
+        }
     }
 }
