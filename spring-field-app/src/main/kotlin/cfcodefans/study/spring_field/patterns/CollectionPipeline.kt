@@ -47,4 +47,12 @@ object CollectionPipeline {
             .filter { c -> c.category == Category.SEDAN }
             .sortedBy { c -> c.year }
 
+    @JvmStatic
+    fun main(args: Array<String>) {
+        val cars: List<Car> = createCars()
+        log.info(getModelsAfter2000(cars).joinToString("\n"))
+        log.info(getGroupingOfCarsByCategory(cars).toString())
+        val john = Person(cars)
+        log.info(getSedanCarsOwnedSortedByDate(listOf(john)).joinToString("\n"))
+    }
 }
