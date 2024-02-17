@@ -8,6 +8,7 @@ import java.util.concurrent.atomic.AtomicInteger
 import java.util.function.Predicate
 import kotlin.math.pow
 
+
 /**
  * refers to https://github.com/iluwatar/java-design-patterns/tree/master/commander
  * Intent:
@@ -686,9 +687,28 @@ object Commander {
                 return
             }
             Retry<Order>(op = { exs: MutableList<Exception> ->
-
+                if (exs.isNotEmpty()) {
+                    if (exs[0] is DatabaseUnavailableException) {
+                        log.debug("Order ${order.id}: $ERROR_CONNECTING_MSG_SVC (Payment Success msg), trying again..")
+                    } else {
+                        log.debug("Order ${order.id}: Error in creating Payment Success messaging request..")
+                    }
+                    throw exs.removeAt(0)
+                }
+                if (order.messageSent != MessageSent.PAYMENT_FAIL
+                    && order.messageSent != MessageSent.PAYMENT_SUCCESSFUL) {
+                    val reqId: String? = messagingService.receiveReq(2)
+                    order.messageSent = MessageSent.PAYMENT_SUCCESSFUL
+                    log.info("Order ${order.id}: Payment Success message sent, request id: $reqId")
+                }
             }, handleError = { o: Order, err: Exception ->
-
+                if ((o.messageSent == MessageSent.NONE_SENT
+                            || o.messageSent == MessageSent.PAYMENT_TRYING)
+                    && System.currentTimeMillis() - o.createdTime < messageTime) {
+                    updateQueue(QueueTask(order, TaskType.MESSAGING, 2))
+                    log.info("Order ${order.id}: Error in sending Payment Success message, trying to queue task and add to employee handle..")
+                    employeeHandleIssue(order)
+                }
             },
                     maxAttempts = numOfRetries,
                     maxDelay = retryDuration,
@@ -697,7 +717,38 @@ object Commander {
         }
 
         private fun sendPaymentPossibleErrorMsg(order: Order) {
-
+            if (System.currentTimeMillis() - order.createdTime >= this.messageTime) {
+                log.trace("Order ${order.id}: Message time for order over, returning..")
+                return
+            }
+            Retry<Order>(op = { exs: MutableList<Exception> ->
+                if (exs.isNotEmpty()) {
+                    if (exs[0] is DatabaseUnavailableException) {
+                        log.debug("Order ${order.id}: $ERROR_CONNECTING_MSG_SVC (Payment Success msg), trying again..")
+                    } else {
+                        log.debug("Order ${order.id}: Error in creating Payment Success messaging request..")
+                    }
+                    throw exs.removeAt(0)
+                }
+                if (order.paid == PaymentStatus.TRYING
+                    && order.messageSent == MessageSent.NONE_SENT) {
+                    val reqId: String? = messagingService.receiveReq(1)
+                    order.messageSent = MessageSent.PAYMENT_TRYING
+                    log.info("Order ${order.id}: Payment Error message sent successfully, request id: $reqId")
+                }
+            }, handleError = { o: Order, err: Exception ->
+                if ((o.messageSent == MessageSent.NONE_SENT
+                            || o.messageSent == MessageSent.PAYMENT_TRYING)
+                    && System.currentTimeMillis() - o.createdTime < messageTime) {
+                    updateQueue(QueueTask(order, TaskType.MESSAGING, 1))
+                    log.info("Order ${order.id}: Error in sending Payment Error message, trying to queue task and add to employee handle..")
+                    employeeHandleIssue(order)
+                }
+            },
+                    maxAttempts = numOfRetries,
+                    maxDelay = retryDuration,
+                    { e -> e is DatabaseUnavailableException }
+            ).asyncPerform(messagingService.exceptions, order)
         }
     }
 }
