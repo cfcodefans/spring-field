@@ -109,6 +109,7 @@ object EventAggregator {
     }
 
     @JvmStatic
+    @kotlin.ExperimentalStdlibApi
     fun main(args: Array<String>) {
         val kingJoffery: KingJoffrey = KingJoffrey()
         val kingsHand: KingsHand = KingsHand().apply {

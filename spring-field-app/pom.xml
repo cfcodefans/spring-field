@@ -15,6 +15,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <kotlin.code.style>official</kotlin.code.style>
         <kotlin.compiler.jvmTarget>16</kotlin.compiler.jvmTarget>
+<!--        <kotlin.version>2.0.0-RC2</kotlin.version>-->
         <kotlin.version>1.9.0</kotlin.version>
         <spring-boot.version>3.1.2</spring-boot.version>
         <springfox.version>2.9.2</springfox.version>
@@ -66,6 +67,8 @@
                 <version>${kotlin.version}</version>
                 <configuration>
                     <jvmTarget>17</jvmTarget>
+                    <apiVersion>1.9</apiVersion>
+                    <languageVersion>1.9</languageVersion>
                 </configuration>
                 <executions>
                     <execution>
@@ -337,6 +340,23 @@
         <!--            <artifactId>jakarta.servlet-api</artifactId>-->
         <!--            <version>4.0.4</version>-->
         <!--        </dependency>-->
+
+        <!-- middlewares -->
+        <dependency>
+            <groupId>org.apache.zookeeper</groupId>
+            <artifactId>zookeeper</artifactId>
+            <version>3.9.2</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>ch.qos.logback</groupId>
+                    <artifactId>logback-core</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>ch.qos.logback</groupId>
+                    <artifactId>logback-classic</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
     </dependencies>
 
 </project>

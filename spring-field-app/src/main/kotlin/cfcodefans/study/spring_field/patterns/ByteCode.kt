@@ -5,7 +5,6 @@ import org.slf4j.LoggerFactory
 import java.util.*
 import java.util.concurrent.ThreadLocalRandom
 
-
 object ByteCode {
     private val log: Logger = LoggerFactory.getLogger(ByteCode::class.java)
 
@@ -76,7 +75,7 @@ object ByteCode {
          */
         open fun execute(bytecodes: IntArray) {
             var i: Int = 0; while (i < bytecodes.size) {
-                val ins: Instruction = Instruction[bytecodes[i]]
+                val ins: Instruction = Instruction.get(bytecodes[i])
                 when (ins) {
                     Instruction.LITERAL -> {
                         // Read the next byte from the bytecode
