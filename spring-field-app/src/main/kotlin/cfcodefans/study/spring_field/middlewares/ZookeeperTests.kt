@@ -8,7 +8,6 @@ import org.apache.zookeeper.Watcher
 import org.apache.zookeeper.Watcher.Event.EventType
 import org.apache.zookeeper.ZooDefs
 import org.apache.zookeeper.ZooKeeper
-import org.apache.zookeeper.data.Stat
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeAll
@@ -70,7 +69,7 @@ open class ZookeeperTests {
                 },
                 AddWatchMode.PERSISTENT_RECURSIVE)
 
-        val fooPath: String = zk.create(TEST_PATH_ROOT + "/foo", null, ZooDefs.Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT)
+        val fooPath: String = zk.create("$TEST_PATH_ROOT/foo", null, ZooDefs.Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT)
             .also { log.info("created $it") }
 
         Thread.sleep(100)
@@ -78,7 +77,7 @@ open class ZookeeperTests {
         log.info("records, ${records.joinToString(prefix = "\n", separator = "\n")}")
         Assertions.assertTrue(records.contains(EventType.NodeCreated.toString()))
 
-        val barPath: String = zk.create(fooPath + "/bar", null, ZooDefs.Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL)
+        val barPath: String = zk.create("$fooPath/bar", null, ZooDefs.Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL)
             .also { log.info("created $it") }
         Thread.sleep(100)
         log.info("root: ${zk.getChildren(TEST_PATH_ROOT, LOG_WATCHER).joinToString(separator = "\n", prefix = "\n")}")

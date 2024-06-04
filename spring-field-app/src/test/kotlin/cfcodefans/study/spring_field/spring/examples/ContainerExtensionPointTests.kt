@@ -9,9 +9,14 @@ import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.beans.factory.config.BeanPostProcessor
+import org.springframework.boot.WebApplicationType
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.autoconfigure.gson.GsonAutoConfiguration
+import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration
+import org.springframework.boot.autoconfigure.jdbc.DataSourceTransactionManagerAutoConfiguration
+import org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration
+import org.springframework.boot.builder.SpringApplicationBuilder
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.context.SpringBootTest.UseMainMethod
 import org.springframework.context.annotation.AnnotationConfigApplicationContext
@@ -59,7 +64,11 @@ open class DummyService : (Any) -> String {
 }
 
 @SpringBootApplication(scanBasePackages = ["cfcodefans.study.spring_field.spring.examples.container_exts"])
-@EnableAutoConfiguration(exclude = [GsonAutoConfiguration::class])
+@EnableAutoConfiguration(exclude = [GsonAutoConfiguration::class,
+    DataSourceAutoConfiguration::class,
+    HibernateJpaAutoConfiguration::class,
+    DataSourceTransactionManagerAutoConfiguration::class
+])
 @EnableAspectJAutoProxy(proxyTargetClass = false)
 open class ContainerExtApp {
     companion object {
@@ -70,9 +79,11 @@ open class ContainerExtApp {
     open fun beanPostProc(): BeanPostProc = BeanPostProc()
 }
 
-//fun main(args: Array<String>) {
-//    SpringApplication.run(ContainerExtApp::class.java, *args)
-//}
+fun main(args: Array<String>) {
+    SpringApplicationBuilder(ContainerExtApp::class.java)
+        .web(WebApplicationType.NONE)
+        .run(*args)
+}
 
 @ExtendWith(SpringExtension::class)
 @SpringBootTest(classes = [ContainerExtApp::class],
