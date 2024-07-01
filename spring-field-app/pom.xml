@@ -67,8 +67,8 @@
                 <version>${kotlin.version}</version>
                 <configuration>
                     <jvmTarget>17</jvmTarget>
-                    <apiVersion>1.9</apiVersion>
-                    <languageVersion>1.9</languageVersion>
+                    <apiVersion>2.0</apiVersion>
+                    <languageVersion>2.0</languageVersion>
                 </configuration>
                 <executions>
                     <execution>
