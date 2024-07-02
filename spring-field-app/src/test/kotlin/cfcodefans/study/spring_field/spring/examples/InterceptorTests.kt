@@ -14,7 +14,7 @@ import org.junit.jupiter.api.extension.ExtendWith
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.aop.interceptor.AbstractTraceInterceptor
-import org.springframework.aop.interceptor.SimpleTraceInterceptor
+import org.springframework.aop.interceptor.CustomizableTraceInterceptor
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration
@@ -53,7 +53,14 @@ open class MethodInvocationAdapter(private val pjp: ProceedingJoinPoint) : Metho
 @Aspect
 @Component
 open class TracingAspect {
-    val simpleTraceInterceptor: AbstractTraceInterceptor = object : SimpleTraceInterceptor() {
+    val traceInterceptor: AbstractTraceInterceptor = object : CustomizableTraceInterceptor() {
+        init {
+            this.setEnterMessage("\n${PLACEHOLDER_TARGET_CLASS_SHORT_NAME}.${PLACEHOLDER_METHOD_NAME}(${PLACEHOLDER_ARGUMENTS}) { \n")
+            this.setExitMessage("\n} $PLACEHOLDER_RETURN_VALUE \n")
+            this.setLogExceptionStackTrace(true)
+            this.setExceptionMessage("Oops")
+        }
+
         override fun isLogEnabled(logger: Log): Boolean = true
         override fun writeToLog(logger: Log, message: String) = logger.info(message)
         override fun writeToLog(logger: Log, message: String, ex: Throwable?) = ex?.let { logger.error(message, ex) } ?: logger.info(message)
@@ -64,7 +71,7 @@ open class TracingAspect {
 
     @Throws(Throwable::class)
     @Around("cfcodefans.study.spring_field.spring.examples.interceptors.TracingAspect.beanMethods()")
-    open fun trace(pjp: ProceedingJoinPoint): Any? = simpleTraceInterceptor.invoke(MethodInvocationAdapter(pjp))
+    open fun trace(pjp: ProceedingJoinPoint): Any? = traceInterceptor.invoke(MethodInvocationAdapter(pjp))
 
 //    @Bean
 //    open fun tracingAspect(): TracingAspect = TracingAspect()
@@ -135,7 +142,7 @@ open class InterceptorTests {
     open lateinit var appCxt: AnnotationConfigApplicationContext
 
     @Test
-    open fun callbar() {
+    open fun callBar() {
         Assertions.assertTrue(bar(LocalDateTime.now()).isBlank().not())
     }
 
