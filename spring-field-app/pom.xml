@@ -15,7 +15,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <kotlin.code.style>official</kotlin.code.style>
         <kotlin.compiler.jvmTarget>17</kotlin.compiler.jvmTarget>
-<!--        <kotlin.version>2.0.0-RC2</kotlin.version>-->
+        <!--        <kotlin.version>2.0.0-RC2</kotlin.version>-->
         <kotlin.version>2.0.0</kotlin.version>
         <spring-boot.version>3.3.0</spring-boot.version>
         <springfox.version>2.9.2</springfox.version>
@@ -57,6 +57,13 @@
                 <directory>src/main/resources</directory>
                 <includes>
                     <include>**/*</include>
+                </includes>
+            </resource>
+            <resource>
+                <directory>src/test/kotlin</directory>
+                <includes>
+                    <include>**/*</include>
+                    <include>**/*.yml</include>
                 </includes>
             </resource>
         </resources>
@@ -229,7 +236,6 @@
         <!--        </dependency>-->
 
         <!-- spring        -->
-
 
 
         <dependency>

@@ -1,0 +1,25 @@
+repos:
+  github:
+    url: https://github.com
+    username: dummy
+    password: github-dummy
+    repo: abc
+    branches: [ b1, b2 ]
+  gitlab:
+    url: https://gitlab.com
+    username: dummy
+    password: gitlab-dummy
+    repo: def
+    branches: [ b3, b4 ]
+
+fileExts:
+  - 'css'
+  - 'js'
+  - 'html'
+  - 'xml'
+  - 'jpeg'
+  - 'png'
+  - 'webp'
+  - 'gif'
+
+testAppName: YamlDummyApp
