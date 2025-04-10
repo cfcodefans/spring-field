@@ -56,8 +56,7 @@ object EventAggregator {
         }
 
         fun notifyObservers(e: Event): EventEmitter = apply {
-            observerList[e]
-                ?.forEach() { ob -> ob.onEvent(e) }
+            observerList[e]?.forEach() { ob -> ob.onEvent(e) }
         }
 
         abstract fun timePasses(day: Weekday): Unit

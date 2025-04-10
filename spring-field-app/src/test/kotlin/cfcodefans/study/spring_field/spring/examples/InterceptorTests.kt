@@ -1,4 +1,4 @@
-package cfcodefans.study.spring_field.spring.examples.interceptors
+package cfcodefans.study.spring_field.spring.examples
 
 import jakarta.annotation.PostConstruct
 import org.aopalliance.intercept.MethodInvocation
@@ -33,7 +33,6 @@ import org.springframework.test.context.junit.jupiter.SpringExtension
 import java.lang.reflect.AccessibleObject
 import java.lang.reflect.Method
 import java.time.LocalDateTime
-import kotlin.jvm.Throws
 
 /**
  * refers to https://docs.spring.io/spring-framework/reference/core/aop/ataspectj/example.html
@@ -120,13 +119,13 @@ open class BarService : (Any) -> String {
 @EnableAspectJAutoProxy(proxyTargetClass = false)
 open class ContainerExtApp {
     companion object {
-        val log: Logger = LoggerFactory.getLogger(ContainerExtApp::class.java)
+        val log: Logger = LoggerFactory.getLogger(ContainerExtApp2::class.java)
     }
 
 }
 
 @ExtendWith(SpringExtension::class)
-@SpringBootTest(classes = [ContainerExtApp::class],
+@SpringBootTest(classes = [ContainerExtApp2::class],
         webEnvironment = SpringBootTest.WebEnvironment.NONE,
         useMainMethod = UseMainMethod.WHEN_AVAILABLE)
 open class InterceptorTests {

@@ -1,4 +1,4 @@
-package cfcodefans.study.spring_field.spring.examples.container_exts
+package cfcodefans.study.spring_field.spring.examples
 
 import jakarta.annotation.PostConstruct
 import org.junit.jupiter.api.Assertions
@@ -70,9 +70,9 @@ open class DummyService : (Any) -> String {
     DataSourceTransactionManagerAutoConfiguration::class
 ])
 @EnableAspectJAutoProxy(proxyTargetClass = false)
-open class ContainerExtApp {
+open class ContainerExtApp2 {
     companion object {
-        val log: Logger = LoggerFactory.getLogger(ContainerExtApp::class.java)
+        val log: Logger = LoggerFactory.getLogger(ContainerExtApp2::class.java)
     }
 
     @Bean
@@ -80,13 +80,13 @@ open class ContainerExtApp {
 }
 
 fun main(args: Array<String>) {
-    SpringApplicationBuilder(ContainerExtApp::class.java)
+    SpringApplicationBuilder(ContainerExtApp2::class.java)
         .web(WebApplicationType.NONE)
         .run(*args)
 }
 
 @ExtendWith(SpringExtension::class)
-@SpringBootTest(classes = [ContainerExtApp::class],
+@SpringBootTest(classes = [ContainerExtApp2::class],
         webEnvironment = SpringBootTest.WebEnvironment.NONE,
         useMainMethod = UseMainMethod.WHEN_AVAILABLE)
 open class ContainerExtensionPointTests {

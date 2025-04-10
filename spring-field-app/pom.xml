@@ -17,7 +17,7 @@
         <kotlin.compiler.jvmTarget>17</kotlin.compiler.jvmTarget>
         <!--        <kotlin.version>2.0.0-RC2</kotlin.version>-->
         <kotlin.version>2.0.0</kotlin.version>
-        <spring-boot.version>3.3.0</spring-boot.version>
+        <spring-boot.version>3.4.0</spring-boot.version>
         <springfox.version>2.9.2</springfox.version>
     </properties>
 
@@ -80,7 +80,7 @@
                 <executions>
                     <execution>
                         <id>compile</id>
-                        <phase>compile</phase>
+                        <phase>process-sources</phase>
                         <goals>
                             <goal>compile</goal>
                         </goals>
@@ -140,7 +140,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.10.1</version>
+                <version>3.13.0</version>
                 <configuration>
                     <source>17</source>
                     <target>17</target>
@@ -220,13 +220,13 @@
         <dependency>
             <groupId>org.hsqldb</groupId>
             <artifactId>hsqldb</artifactId>
-            <version>2.7.2</version>
+            <version>2.7.3</version>
         </dependency>
 
         <dependency>
             <groupId>mysql</groupId>
             <artifactId>mysql-connector-java</artifactId>
-            <version>8.0.30</version>
+            <version>8.0.33</version>
         </dependency>
 
         <!--        <dependency>-->
@@ -284,10 +284,22 @@
             <version>${spring-boot.version}</version>
         </dependency>
         <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-security</artifactId>
+            <version>${spring-boot.version}</version>
+        </dependency>
+
+        <dependency>
             <groupId>com.h2database</groupId>
             <artifactId>h2</artifactId>
             <scope>runtime</scope>
             <version>2.1.214</version>
+        </dependency>
+        <dependency>
+
+            <groupId>io.jsonwebtoken</groupId>
+            <artifactId>jjwt</artifactId>
+            <version>0.12.3</version>
         </dependency>
 
         <dependency>
