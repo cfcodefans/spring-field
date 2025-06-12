@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.boot.SpringApplication
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.cache.CacheManager
+import org.springframework.cache.annotation.Cacheable
 import org.springframework.cache.annotation.EnableCaching
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
@@ -47,11 +48,11 @@ open class StandaloneWebApp {
 
 fun main(args: Array<String>) {
     SpringApplication.run(StandaloneWebApp::class.java,
-            *args,
-            "--server.port=$PORT",
-            "--server.compression.enabled=true",
-            "--server.compression.mime-types=text/html,text/xml,text/plain,text/css,text/javascript,application/javascript,application/json,application/xml,application/x-javascript",
-            "--server.compression.min-response-size=2048")
+                          *args,
+                          "--server.port=$PORT",
+                          "--server.compression.enabled=true",
+                          "--server.compression.mime-types=text/html,text/xml,text/plain,text/css,text/javascript,application/javascript,application/json,application/xml,application/x-javascript",
+                          "--server.compression.min-response-size=2048")
 }
 
 @ControllerAdvice
@@ -103,31 +104,32 @@ open class StaticHost {
     @Autowired
     open lateinit var cacheManager: CacheManager
 
+    open val rootPath: String = STATIC_ROOT
+
     @PostConstruct
     open fun init() {
         Thread() {
             FileSystems.getDefault()
                 .newWatchService()
                 .use { ws ->
-                    Paths.get(STATIC_ROOT)
+                    Paths.get(rootPath)
                         .register(ws, StandardWatchEventKinds.ENTRY_MODIFY, StandardWatchEventKinds.ENTRY_DELETE)
                     while (true) {
                         val watchKey = ws.take()
                         for (ev in watchKey.pollEvents()) {
-                            val pathStr = ev.context().toString()
+                            val pathStr: String = ev.context().toString()
                             cacheManager.getCache(CACHE_NAME)?.evictIfPresent(pathStr)
                             log.info("$pathStr evicted")
                         }
                     }
                 }
         }.also { it.isDaemon = true }
-//            .start()
+            .start()
     }
 
     @GetMapping("/static/{path}")
-//    @Cacheable(value = [CACHE_NAME], key = "#path")
-    open fun serve(@PathVariable(name = "path", required = true)
-                   path: String): ResponseEntity<ByteArray> = Paths
+    @Cacheable(value = [CACHE_NAME], key = "#path")
+    open fun serve(@PathVariable(name = "path", required = true) path: String): ResponseEntity<ByteArray> = Paths
         .get(STATIC_ROOT)
         .resolve(path)
         .let { p ->
@@ -135,8 +137,8 @@ open class StaticHost {
             if (p.isReadable().not()) throw IllegalAccessException("path: $p is not accessible")
 
             ResponseEntity<ByteArray>(p.readBytes(),
-                    HttpHeaders().apply { add(HttpHeaders.CONTENT_TYPE, Files.probeContentType(p)) },
-                    HttpStatus.OK)
+                                      HttpHeaders().apply { add(HttpHeaders.CONTENT_TYPE, Files.probeContentType(p)) },
+                                      HttpStatus.OK)
         }
 }
 
