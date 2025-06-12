@@ -42,9 +42,7 @@ object AbstractDocument {
         fun <T> children(key: String?, constructor: (TProps) -> T): Sequence<T>?
     }
 
-    abstract class AbstractDoc(
-            private val properties: MutableMap<String, Any?>
-    ) : IDoc {
+    abstract class AbstractDoc(private val properties: MutableMap<String, Any?>) : IDoc {
         override fun put(key: String, value: Any) = run { properties[key] = value }
         override fun get(key: String?): Any? = properties[key]
 

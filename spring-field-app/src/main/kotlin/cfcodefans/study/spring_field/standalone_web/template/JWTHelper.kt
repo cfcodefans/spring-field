@@ -19,6 +19,7 @@ import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.security.web.util.matcher.RequestMatcher
 import org.springframework.web.filter.OncePerRequestFilter
 import org.springframework.web.util.WebUtils
+import java.time.Instant
 import java.util.*
 
 
@@ -70,11 +71,17 @@ open class JwtFilter(private val reqMatcher: RequestMatcher) : OncePerRequestFil
         if (token.isNullOrBlank().not()) {
             try {
                 JWTHelper.validateToken(token)
-                    ?.subject
-                    ?.also { username -> req.setAttribute("username", username) }
+                    ?.takeIf { claim ->
+                        claim.expiration.after(Date.from(Instant.now()))
+                                && Date.from(Instant.now()).after(claim.notBefore)
+                    }?.subject
                     ?.also { username ->
+                        req.setAttribute("username", username)
                         SecurityContextHolder.getContext().authentication = UsernamePasswordAuthenticationToken(username, null, emptyList<SimpleGrantedAuthority>())
-                    }
+                    } ?: run {
+                    resp.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Token expired")
+                    return
+                }
             } catch (e: Exception) {
                 resp.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Invalid Token")
                 return

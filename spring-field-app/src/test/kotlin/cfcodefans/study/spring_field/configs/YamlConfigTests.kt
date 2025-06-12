@@ -1,6 +1,6 @@
 package cfcodefans.study.spring_field.configs
 
-import com.thenetcircle.commons.Jsons
+import cfcodefans.study.spring_field.commons.Jsons
 import jakarta.annotation.PostConstruct
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith

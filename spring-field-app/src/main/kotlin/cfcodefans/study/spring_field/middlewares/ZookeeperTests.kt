@@ -1,13 +1,8 @@
 package cfcodefans.study.spring_field.middlewares
 
-import com.thenetcircle.commons.Jsons
-import org.apache.zookeeper.AddWatchMode
-import org.apache.zookeeper.CreateMode
-import org.apache.zookeeper.WatchedEvent
-import org.apache.zookeeper.Watcher
+import cfcodefans.study.spring_field.commons.Jsons
+import org.apache.zookeeper.*
 import org.apache.zookeeper.Watcher.Event.EventType
-import org.apache.zookeeper.ZooDefs
-import org.apache.zookeeper.ZooKeeper
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeAll
@@ -92,4 +87,5 @@ open class ZookeeperTests {
 
         zk.delete(TEST_PATH_ROOT + "/foo", -1)
     }
+
 }

@@ -1,4 +1,4 @@
-package com.thenetcircle.commons
+package cfcodefans.study.spring_field.commons
 
 import com.fasterxml.jackson.core.JsonGenerator
 import com.fasterxml.jackson.core.JsonParser
@@ -10,14 +10,17 @@ import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.databind.node.*
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
-import com.thenetcircle.commons.DateTimeHelper.DEFAULT_DATE_TIME_FORMAT
-import com.thenetcircle.commons.DateTimeHelper.toLocalDateTime
+import jakarta.persistence.AttributeConverter
+import jakarta.persistence.Converter
 import org.apache.commons.lang3.time.DateUtils
 import java.io.InputStream
 import java.text.SimpleDateFormat
 import java.util.*
 
 object Jsons {
+
+    const val DEFAULT_DATE_TIME_FORMAT: String = "yyyy-MM-dd HH:mm:ss"
+
     // https://www.baeldung.com/jackson-kotlin
     val MAPPER: ObjectMapper = jacksonObjectMapper().apply {
         configure(JsonParser.Feature.AUTO_CLOSE_SOURCE, true)
@@ -47,8 +50,8 @@ object Jsons {
 
     fun read(input: InputStream?): JsonNode {
         requireNotNull(input) { "reading json however the input stream is empty" }
-        try {
-            return MAPPER.readValue(input, JsonNode::class.java)
+        return try {
+            MAPPER.readValue(input, JsonNode::class.java)
         } catch (e: Exception) {
             throw RuntimeException("reading json stream", e)
         }
@@ -56,8 +59,8 @@ object Jsons {
 
     fun read(raw: String?): JsonNode {
         requireNotNull(raw) { "reading json however the json raw is empty" }
-        try {
-            return MAPPER.readValue(raw, JsonNode::class.java)
+        return try {
+            MAPPER.readValue(raw, JsonNode::class.java)
         } catch (e: Exception) {
             throw RuntimeException("reading json raw", e)
         }
@@ -65,8 +68,8 @@ object Jsons {
 
     fun <T> read(raw: String?, cls: Class<T>): T {
         requireNotNull(raw) { "reading json however the json raw is empty" }
-        try {
-            return MAPPER.readValue(raw, cls)
+        return try {
+            MAPPER.readValue(raw, cls)
         } catch (e: Exception) {
             throw RuntimeException("reading json raw", e)
         }
@@ -74,8 +77,8 @@ object Jsons {
 
     fun <T> read(jn: JsonNode?, cls: Class<T>): T {
         requireNotNull(jn) { "reading json however the json node is null" }
-        try {
-            return MAPPER.readValue(jn.traverse(), cls)
+        return try {
+            MAPPER.readValue(jn.traverse(), cls)
         } catch (e: Exception) {
             throw RuntimeException("reading json node to ${cls.name}", e)
         }
@@ -92,13 +95,14 @@ object Jsons {
         }
     }
 
-    // pretty printer
-    // {
-    //    "name" : "Dean",
-    //    "age" : 38,
-    //    "skills" : [ "java", "python", "node", "kotlin" ]
-    // }
-    fun toString(obj: Any): String = try {
+    /** pretty printer
+    <pre> {
+    "name" : "Dean",
+    "age" : 38,
+    "skills" : [ "java", "python", "node", "kotlin" ]
+    } </pre>
+     **/
+    fun toString(obj: Any?): String = try {
         MAPPER.writerWithDefaultPrettyPrinter().writeValueAsString(obj)
     } catch (e: Exception) {
         throw RuntimeException("deserialize json to string", e)
@@ -106,18 +110,15 @@ object Jsons {
 
     // default print
     // {"name" : "Dean","age" : 38,"skills" : [ "java", "python", "node", "kotlin" ]}
-    fun toStringWithoutPrettyPrinter(obj: Any): String = try {
+    fun toStr(obj: Any): String = try {
         MAPPER.writeValueAsString(obj)
     } catch (e: Exception) {
         throw RuntimeException("deserialize json to string", e)
     }
 
     fun toNode(any: Any?): JsonNode = try {
-        //TODO
-        if (any == null)
-            MAPPER.nullNode()
-        else
-            MAPPER.convertValue(any,
+        if (any == null) MAPPER.nullNode()
+        else MAPPER.convertValue(any,
                 when (any) {
                     is Boolean -> BooleanNode::class.java
                     is Char -> TextNode::class.java
@@ -130,47 +131,35 @@ object Jsons {
         throw RuntimeException("serialize object to json\n\t${any}", e)
     }
 
-    fun jsonOrNull(raw: String?): JsonNode? = if (raw.isNullOrBlank())
-        null
-    else
-        runCatching { MAPPER.readValue(raw, JsonNode::class.java) }.getOrNull()
+    fun jsonOrNull(raw: String?): JsonNode? = if (raw.isNullOrBlank()) null
+    else runCatching { MAPPER.readValue(raw, JsonNode::class.java) }.getOrNull()
 
     fun toJson(map: Map<String, Any?>): JsonNode = try {
-        val jn = MAPPER.createObjectNode()
-        map.forEach { (k, v) -> jn.putPOJO(k, v) }
-        jn
+        MAPPER.createObjectNode()
+            .also { jn -> map.forEach { (k, v) -> jn.putPOJO(k, v) } }
     } catch (e: Exception) {
         throw RuntimeException("serialize Map to json\n\t${map}", e)
     }
 
     const val ISO_DATE_SCHEMA: String = "iso:date://"
 
-//    fun normalize(param: Any?): Any? = when {
-//        param !is String -> param
-//        param.startsWith(ISO_DATE_SCHEMA) -> DateUtils.parseDate(param.substringAfter(ISO_DATE_SCHEMA).trim(), JS_ISO_DATETIME_FORMAT).toLocalDateTime()
-//        else -> param
-//    }
+    fun normalize(param: Any?): Any? = when {
+        param !is String -> param
+        param.startsWith(ISO_DATE_SCHEMA) -> DateUtils.parseDate(param.substringAfter(ISO_DATE_SCHEMA).trim(), JS_ISO_DATETIME_FORMAT)//.toLDT()
+        else -> param
+    }
 
-    fun <T> readOrNull(raw: String?, cls: Class<T>): T? = if (raw.isNullOrBlank())
-        null
-    else
-        runCatching { MAPPER.readValue(raw, cls) }.getOrNull()
+    fun <T> readOrNull(raw: String?, cls: Class<T>): T? = if (raw.isNullOrBlank()) null
+    else runCatching { MAPPER.readValue(raw, cls) }.getOrNull()
 
     fun <T> readOrNull(jn: JsonNode?, cls: Class<T>): T? = jn
-        ?.let {
-            runCatching { MAPPER.readValue(it.traverse(), cls) }.getOrNull()
-        }
+        ?.let { runCatching { MAPPER.readValue(it.traverse(), cls) }.getOrNull() }
 
     const val JS_ISO_DATETIME_FORMAT: String = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"
 
-    fun <T : JsonNode> ObjectNode.getOrDefault(key: String, default: T?): T? {
-        val re = this.get(key)
-        return if (re == null) {
-            this.set<T>(key, default)
-            default
-        } else
-            re as T
-    }
+    fun <T : JsonNode> ObjectNode.getOrDefault(key: String, default: T?): T? = this.get(key)
+        ?.let { it as T }
+        ?: default.also { this.set<T?>(key, it) }
 
     /**
      * intend to resolve some escaped chars, doesn't work well
@@ -188,4 +177,19 @@ object Jsons {
         is Any -> "\"$value\""
         else -> "null"
     }
+
+    fun toStringWithoutPrettyPrinter(obj: Any?): String = try {
+        MAPPER.writeValueAsString(obj)
+    } catch (e: Exception) {
+        throw RuntimeException("deserialize json to string", e)
+    }
+}
+
+@Converter(autoApply = false)
+open class ObjectNodeConverter : AttributeConverter<ObjectNode?, String?> {
+    override fun convertToDatabaseColumn(attribute: ObjectNode?): String? = attribute?.toString()
+
+    override fun convertToEntityAttribute(dbData: String?): ObjectNode? = dbData
+        ?.ifBlank { null }
+        ?.let { Jsons.read(dbData, ObjectNode::class.java) }
 }

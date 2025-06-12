@@ -1,4 +1,4 @@
-package com.thenetcircle.commons
+package cfcodefans.study.spring_field.commons
 
 import org.apache.commons.lang3.time.DateFormatUtils
 import org.apache.commons.lang3.time.DateUtils
@@ -212,11 +212,10 @@ object DateTimeHelper {
 
     fun parse(dateStr: String?, dateFormat: String): Date? {
         if (dateStr.isNullOrBlank()) return null
-        return kotlin.runCatching { DateUtils.parseDate(dateStr, dateFormat) }.getOrNull()
+        return runCatching { DateUtils.parseDate(dateStr, dateFormat) }.getOrNull()
     }
 
     fun LocalDateTime.info(): String = getDefaultFormattedDateTimeWithZoneId(this)!!
 
     fun Date.toLocalDateTime(zid: ZoneId = ZoneId.systemDefault()): LocalDateTime = LocalDateTime.ofInstant(this.toInstant(), zid)
 }
-
