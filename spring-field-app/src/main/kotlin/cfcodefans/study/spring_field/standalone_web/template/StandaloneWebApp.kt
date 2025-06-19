@@ -6,6 +6,7 @@ import jakarta.annotation.PostConstruct
 import jakarta.servlet.http.HttpServletResponse
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import org.springdoc.core.models.GroupedOpenApi
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.boot.SpringApplication
@@ -22,15 +23,12 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity
 import org.springframework.security.web.SecurityFilterChain
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter
-import org.springframework.security.web.util.matcher.AntPathRequestMatcher
+import org.springframework.security.web.servlet.util.matcher.PathPatternRequestMatcher
 import org.springframework.security.web.util.matcher.RequestMatcher
 import org.springframework.web.bind.annotation.*
 import org.springframework.web.context.request.WebRequest
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler
-import java.nio.file.FileSystems
-import java.nio.file.Files
-import java.nio.file.Paths
-import java.nio.file.StandardWatchEventKinds
+import java.nio.file.*
 import kotlin.io.path.isReadable
 import kotlin.io.path.notExists
 import kotlin.io.path.readBytes
@@ -46,13 +44,37 @@ open class StandaloneWebApp {
     }
 }
 
+@Configuration
+open class OpenAPIDocConfig {
+    companion object {
+        val log: Logger = LoggerFactory.getLogger(OpenAPIDocConfig::class.java)
+    }
+
+    @PostConstruct
+    open fun init() {
+        log.info("""OpenAPIDocConfig is initializing...
+            |check with http://localhost:8081/swagger-ui/index.html#/biz-ctrl/getCurrentDateTime
+        """.trimMargin())
+    }
+
+    @Bean
+    open fun createRestApi(): GroupedOpenApi = GroupedOpenApi
+        .builder()
+        .group("public-api")
+        .pathsToExclude("/auth")
+        .build()
+}
+
 fun main(args: Array<String>) {
     SpringApplication.run(StandaloneWebApp::class.java,
                           *args,
                           "--server.port=$PORT",
                           "--server.compression.enabled=true",
                           "--server.compression.mime-types=text/html,text/xml,text/plain,text/css,text/javascript,application/javascript,application/json,application/xml,application/x-javascript",
-                          "--server.compression.min-response-size=2048")
+                          "--server.compression.min-response-size=2048",
+                          "--springdoc.api-docs.enabled=true",
+                          "--springdoc.swagger-ui.enabled=true",
+                          "--springdoc.api-docs.path=/api-docs")
 }
 
 @ControllerAdvice
@@ -82,7 +104,8 @@ open class ApiExceptionHandler : ResponseEntityExceptionHandler() {
     @ExceptionHandler(value = [IllegalArgumentException::class,
         NoSuchElementException::class,
         RuntimeException::class,
-        UnsupportedOperationException::class])
+        UnsupportedOperationException::class,
+        Exception::class])
     fun handleException(ex: Exception,
                         req: WebRequest,
                         resp: HttpServletResponse): ResponseEntity<Any> {
@@ -115,7 +138,7 @@ open class StaticHost {
                     Paths.get(rootPath)
                         .register(ws, StandardWatchEventKinds.ENTRY_MODIFY, StandardWatchEventKinds.ENTRY_DELETE)
                     while (true) {
-                        val watchKey = ws.take()
+                        val watchKey: WatchKey = ws.take()
                         for (ev in watchKey.pollEvents()) {
                             val pathStr: String = ev.context().toString()
                             cacheManager.getCache(CACHE_NAME)?.evictIfPresent(pathStr)
@@ -151,19 +174,19 @@ open class SecurityConfig {
 
     @Bean(name = ["protectedResMatcher"])
     @Qualifier("protectedResMatcher")
-    open fun apiRequestMatcher(): RequestMatcher = AntPathRequestMatcher("/api/**")
+    open fun apiRequestMatcher(): RequestMatcher = PathPatternRequestMatcher.withDefaults().matcher("/api/**")
 
     @Bean
-    open fun authRequestMatcher(): RequestMatcher = AntPathRequestMatcher("/auth/login")
+    open fun authRequestMatcher(): RequestMatcher = PathPatternRequestMatcher.withDefaults().matcher("/auth/login")
 
     @Bean
-    open fun staticResourceMatcher(): RequestMatcher = AntPathRequestMatcher("/static/**")
+    open fun staticResourceMatcher(): RequestMatcher = PathPatternRequestMatcher.withDefaults().matcher("/static/**")
 
     @Throws(java.lang.Exception::class)
     @Bean
     open fun configure(http: HttpSecurity): SecurityFilterChain = http
         .csrf { customizer -> customizer.disable() }
-        .addFilterBefore(JwtFilter(apiRequestMatcher()), UsernamePasswordAuthenticationFilter::class.java)
+        .addFilterBefore(JwtFilter(reqMatcher = apiRequestMatcher()), UsernamePasswordAuthenticationFilter::class.java)
         .authorizeHttpRequests { customizer ->
             customizer.requestMatchers(authRequestMatcher(), staticResourceMatcher())
                 .permitAll()
