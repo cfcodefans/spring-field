@@ -63,7 +63,7 @@ open class DummyService : (Any) -> String {
     }
 }
 
-@SpringBootApplication(scanBasePackages = ["cfcodefans.study.spring_field.spring.examples.container_exts"])
+@SpringBootApplication(scanBasePackages = ["cfcodefans.study.spring_field.spring.examples"])
 @EnableAutoConfiguration(exclude = [GsonAutoConfiguration::class,
     DataSourceAutoConfiguration::class,
     HibernateJpaAutoConfiguration::class,
@@ -87,8 +87,10 @@ fun main(args: Array<String>) {
 
 @ExtendWith(SpringExtension::class)
 @SpringBootTest(classes = [ContainerExtApp2::class],
-        webEnvironment = SpringBootTest.WebEnvironment.NONE,
-        useMainMethod = UseMainMethod.WHEN_AVAILABLE)
+                webEnvironment = SpringBootTest.WebEnvironment.NONE,
+                useMainMethod = UseMainMethod.WHEN_AVAILABLE,
+        // Add this line to ensure no profiles are activated for this test.
+                properties = ["spring.profiles.active="])
 open class ContainerExtensionPointTests {
     companion object {
         val log: Logger = LoggerFactory.getLogger(ContainerExtensionPointTests::class.java)

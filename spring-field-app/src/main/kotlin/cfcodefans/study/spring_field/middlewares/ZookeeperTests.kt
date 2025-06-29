@@ -4,11 +4,11 @@ import cfcodefans.study.spring_field.commons.Jsons
 import org.apache.zookeeper.*
 import org.apache.zookeeper.Watcher.Event.EventType
 import org.junit.jupiter.api.AfterAll
-import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeAll
-import org.junit.jupiter.api.Test
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import kotlin.test.Test
 
 open class ZookeeperTests {
     companion object {
@@ -57,12 +57,12 @@ open class ZookeeperTests {
     fun testWatcher() {
         val records: MutableList<String> = arrayListOf()
         zk.addWatch(TEST_PATH_ROOT,
-                { ev: WatchedEvent? ->
-                    LOG_WATCHER(ev)
-                    if (ev?.path?.startsWith(TEST_PATH_ROOT) == false) return@addWatch
-                    records.add(ev!!.type.toString())
-                },
-                AddWatchMode.PERSISTENT_RECURSIVE)
+                    { ev: WatchedEvent? ->
+                        LOG_WATCHER(ev)
+                        if (ev?.path?.startsWith(TEST_PATH_ROOT) == false) return@addWatch
+                        records.add(ev!!.type.toString())
+                    },
+                    AddWatchMode.PERSISTENT_RECURSIVE)
 
         val fooPath: String = zk.create("$TEST_PATH_ROOT/foo", null, ZooDefs.Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT)
             .also { log.info("created $it") }
@@ -70,20 +70,20 @@ open class ZookeeperTests {
         Thread.sleep(100)
         log.info("root: ${zk.getChildren(TEST_PATH_ROOT, LOG_WATCHER).joinToString(separator = "\n", prefix = "\n")}")
         log.info("records, ${records.joinToString(prefix = "\n", separator = "\n")}")
-        Assertions.assertTrue(records.contains(EventType.NodeCreated.toString()))
+        assertTrue(records.contains(EventType.NodeCreated.toString()))
 
         val barPath: String = zk.create("$fooPath/bar", null, ZooDefs.Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL)
             .also { log.info("created $it") }
         Thread.sleep(100)
         log.info("root: ${zk.getChildren(TEST_PATH_ROOT, LOG_WATCHER).joinToString(separator = "\n", prefix = "\n")}")
         log.info("records, ${records.joinToString(prefix = "\n", separator = "\n")}")
-        Assertions.assertTrue(records.count { it == EventType.NodeCreated.toString() } == 2)
+        assertTrue(records.count { it == EventType.NodeCreated.toString() } == 2)
 
         zk.delete(barPath, -1)
         Thread.sleep(100)
         log.info("root: ${zk.getChildren(TEST_PATH_ROOT, LOG_WATCHER).joinToString(separator = "\n", prefix = "\n")}")
         log.info("records, ${records.joinToString(prefix = "\n", separator = "\n")}")
-        Assertions.assertTrue(records.count { it == EventType.NodeDeleted.toString() } == 1)
+        assertTrue(records.count { it == EventType.NodeDeleted.toString() } == 1)
 
         zk.delete(TEST_PATH_ROOT + "/foo", -1)
     }

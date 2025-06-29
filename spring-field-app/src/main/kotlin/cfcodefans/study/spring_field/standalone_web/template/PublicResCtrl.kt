@@ -5,16 +5,14 @@ import io.swagger.v3.oas.annotations.Hidden
 import io.swagger.v3.oas.annotations.OpenAPIDefinition
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
+import io.swagger.v3.oas.annotations.enums.ParameterIn
 import io.swagger.v3.oas.annotations.media.Content
 import io.swagger.v3.oas.annotations.media.Schema
 import jakarta.servlet.http.HttpServletRequest
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.http.MediaType
-import org.springframework.web.bind.annotation.GetMapping
-import org.springframework.web.bind.annotation.PostMapping
-import org.springframework.web.bind.annotation.RequestMapping
-import org.springframework.web.bind.annotation.RestController
+import org.springframework.web.bind.annotation.*
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import io.swagger.v3.oas.annotations.parameters.RequestBody as ReqBody
@@ -68,14 +66,31 @@ open class PublicResCtrl {
 
     @Operation(method = "POST",
                summary = "dummy form",
+               parameters = [ // Define parameters here for the operation
+                   Parameter(name = "X-Custom-Header", // The name of the header
+                             `in` = ParameterIn.HEADER, // Specify that it's a header parameter
+                             description = "A custom header required for this request",
+                             required = true,
+                             schema = Schema(type = "string", defaultValue = "default-value")),
+                   Parameter(name = "X-Optional-Header",
+                             `in` = ParameterIn.HEADER,
+                             description = "An optional custom header",
+                             required = false, // Mark as not required
+                             schema = Schema(type = "integer", format = "int32"))
+               ],
                requestBody = ReqBody(content = [
                    Content(mediaType = MediaType.APPLICATION_FORM_URLENCODED_VALUE, schema = Schema(implementation = DummyForm2::class))
                ]))
     @PostMapping(path = ["/dummy-form-3"],
                  consumes = [MediaType.APPLICATION_FORM_URLENCODED_VALUE],
                  produces = [MediaType.APPLICATION_JSON_VALUE])
-    open fun echoForm3(req: HttpServletRequest): String = DummyForm2(
-            msg = req.parameterMap["message"]?.firstOrNull() ?: "default message by request",
-            senderUid = req.parameterMap["sender_uid"]?.firstOrNull()?.toLong() ?: -1
-    ).toString()
+    open fun echoForm3(
+            @RequestHeader("X-Custom-Header") customHeaderValue: String, // Spring annotation to read the header
+            @RequestHeader("X-Optional-Header", required = false) optionalHeaderValue: Int?,
+            req: HttpServletRequest): String = Jsons.toString(mapOf("form" to DummyForm2(msg = req.parameterMap["message"]?.firstOrNull() ?: "default message by request",
+                                                                                         senderUid = req.parameterMap["sender_uid"]?.firstOrNull()?.toLong() ?: -1),
+                                                                    "X-Custom-Header" to customHeaderValue,
+                                                                    "X-Optional-Header" to optionalHeaderValue))
+
+
 }
