@@ -1,5 +1,6 @@
-package cfcodefans.study.spring_field.spring.examples
+package cfcodefans.study.spring_field.spring.examples.interceptors
 
+import cfcodefans.study.spring_field.spring.examples.ContainerExtApp2
 import jakarta.annotation.PostConstruct
 import org.aopalliance.intercept.MethodInvocation
 import org.apache.commons.logging.Log
@@ -126,8 +127,8 @@ open class ContainerExtApp {
 
 @ExtendWith(SpringExtension::class)
 @SpringBootTest(classes = [ContainerExtApp2::class],
-        webEnvironment = SpringBootTest.WebEnvironment.NONE,
-        useMainMethod = UseMainMethod.WHEN_AVAILABLE)
+                webEnvironment = SpringBootTest.WebEnvironment.NONE,
+                useMainMethod = UseMainMethod.WHEN_AVAILABLE)
 open class InterceptorTests {
     companion object {
         val log: Logger = LoggerFactory.getLogger(InterceptorTests::class.java)

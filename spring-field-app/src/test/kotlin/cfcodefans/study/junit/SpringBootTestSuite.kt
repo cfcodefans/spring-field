@@ -33,6 +33,7 @@ import org.springframework.stereotype.Service
 import org.springframework.test.context.junit.jupiter.SpringExtension
 import java.time.LocalDateTime
 
+
 @Suite
 @SuiteDisplayName("Test Suite for Demo Project")
 @SelectClasses(DummyServiceTestsA::class, DummyServiceTestsB::class)
@@ -87,7 +88,9 @@ open class DummySpringBootApp {
                 useMainMethod = UseMainMethod.NEVER,
         // Add this line to ensure no profiles are activated for this test.
                 properties = ["spring.profiles.active="])
-open class DummyServiceTestsA {
+open class DummyServiceTestBase {}
+
+open class DummyServiceTestsA : DummyServiceTestBase() {
     companion object {
         val log: Logger = LoggerFactory.getLogger(DummyServiceTestsA::class.java)
     }
@@ -101,11 +104,15 @@ open class DummyServiceTestsA {
 
     @Test
     open fun callDummy() {
+        Assertions.assertNotNull(dummy)
+        Assertions.assertNotNull(appCxt)
         Assertions.assertTrue(dummy(LocalDateTime.now()).also { log.info(it) }.isBlank().not())
     }
 
     @Test
     open fun inspectApp() {
+        Assertions.assertNotNull(dummy)
+        Assertions.assertNotNull(appCxt)
         log.info(appCxt.toString())
 
         appCxt.beanDefinitionNames
@@ -118,13 +125,7 @@ open class DummyServiceTestsA {
     }
 }
 
-@ExtendWith(SpringExtension::class)
-@SpringBootTest(classes = [DummySpringBootApp::class],
-                webEnvironment = SpringBootTest.WebEnvironment.NONE,
-                useMainMethod = UseMainMethod.NEVER,
-        // Add this line to ensure no profiles are activated for this test.
-                properties = ["spring.profiles.active="])
-open class DummyServiceTestsB {
+open class DummyServiceTestsB : DummyServiceTestBase() {
     companion object {
         val log: Logger = LoggerFactory.getLogger(DummyServiceTestsB::class.java)
     }
@@ -138,12 +139,16 @@ open class DummyServiceTestsB {
 
     @Test
     open fun callDummy() {
+        Assertions.assertNotNull(dummy)
+        Assertions.assertNotNull(appCxt)
         Assertions.assertTrue(dummy("test B").also { log.info(it) }.isBlank().not())
     }
 
     @Test
     open fun inspectApp() {
-        DummyServiceTestsA.Companion.log.info(appCxt.toString())
+        Assertions.assertNotNull(dummy)
+        Assertions.assertNotNull(appCxt)
+        log.info(appCxt.toString())
 
         appCxt.beanDefinitionNames
             .map { name -> appCxt.getBeanDefinition(name) }
@@ -151,6 +156,6 @@ open class DummyServiceTestsB {
             .map { bd -> "${bd.factoryBeanName}\t${bd.beanClassName}" }
             .sorted()
             .joinToString(separator = "\n\r")
-            .let { DummyServiceTestsA.Companion.log.info(it) }
+            .let { log.info(it) }
     }
 }

@@ -47,16 +47,14 @@ object TestContextProfiles {
     val NO_JPA_CONTEXT: Array<KClass<out Any>> = arrayOf(
             DataSourceAutoConfiguration::class,
             HibernateJpaAutoConfiguration::class,
-            DataSourceTransactionManagerAutoConfiguration::class
-    )
+            DataSourceTransactionManagerAutoConfiguration::class)
 
     /**
      * A truly minimal context for simple utility or configuration tests.
-     * It combines the other profiles for a fast, lightweight context.
+     * It combines the other profiles to form a fast, lightweight context.
      */
     val MINIMAL_CONTEXT: Array<KClass<out Any>> = NO_WEB_CONTEXT + NO_JPA_CONTEXT + arrayOf(
             // Add any other specific exclusions for the minimal profile
             JmxAutoConfiguration::class,
-            GsonAutoConfiguration::class
-    )
+            GsonAutoConfiguration::class)
 }

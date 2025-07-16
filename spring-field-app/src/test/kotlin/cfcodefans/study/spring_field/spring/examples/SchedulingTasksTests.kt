@@ -1,4 +1,4 @@
-package cfcodefans.study.spring_field.spring.examples
+package cfcodefans.study.spring_field.spring.examples.schedule
 
 import com.fasterxml.jackson.databind.util.StdDateFormat
 import jakarta.annotation.PostConstruct
@@ -12,15 +12,21 @@ import org.mockito.Mockito.verify
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.boot.autoconfigure.EnableAutoConfiguration
 import org.springframework.boot.autoconfigure.SpringBootApplication
+import org.springframework.boot.autoconfigure.gson.GsonAutoConfiguration
+import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration
+import org.springframework.boot.autoconfigure.jdbc.DataSourceTransactionManagerAutoConfiguration
+import org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration
 import org.springframework.boot.test.context.SpringBootTest
-import org.springframework.boot.test.mock.mockito.SpyBean
+import org.springframework.boot.test.context.SpringBootTest.UseMainMethod
 import org.springframework.scheduling.annotation.EnableScheduling
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Component
+import org.springframework.test.context.bean.override.mockito.MockitoSpyBean
 import org.springframework.test.context.junit.jupiter.SpringExtension
 import java.text.DateFormat
-import java.util.Date
+import java.util.*
 
 
 @Component
@@ -41,14 +47,22 @@ open class ScheduledTasks {
     }
 }
 
-@SpringBootApplication
+@SpringBootApplication(scanBasePackages = ["cfcodefans.study.spring_field.spring.examples.schedule"])
+@EnableAutoConfiguration(exclude = [GsonAutoConfiguration::class,
+    DataSourceAutoConfiguration::class,
+    HibernateJpaAutoConfiguration::class,
+    DataSourceTransactionManagerAutoConfiguration::class
+])
 @EnableScheduling
 open class SchedulingTasksApp {
 
 }
 
 @ExtendWith(SpringExtension::class)
-@SpringBootTest(classes = [SchedulingTasksApp::class])
+@SpringBootTest(classes = [SchedulingTasksApp::class],
+                webEnvironment = SpringBootTest.WebEnvironment.NONE,
+                properties = ["spring.profiles.active="],
+                useMainMethod = UseMainMethod.WHEN_AVAILABLE)
 open class SchedulingTasksTests {
     companion object {
         val log: Logger = LoggerFactory.getLogger(SchedulingTasksTests::class.java)
@@ -63,7 +77,7 @@ open class SchedulingTasksTests {
         Assertions.assertNotNull(tasksRef)
     }
 
-    @SpyBean
+    @MockitoSpyBean
     lateinit var tasks: ScheduledTasks
 
     @Test
