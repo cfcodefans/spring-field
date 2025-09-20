@@ -6,9 +6,9 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.WebApplicationType
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration
 import org.springframework.boot.autoconfigure.SpringBootApplication
-import org.springframework.boot.autoconfigure.gson.GsonAutoConfiguration
 import org.springframework.boot.builder.SpringApplicationBuilder
-import org.springframework.boot.web.client.RestTemplateBuilder
+//import org.springframework.boot.autoconfigure.gson.GsonAutoConfiguration
+//import org.springframework.boot.web.client.RestTemplateBuilder
 import org.springframework.context.annotation.Bean
 import org.springframework.stereotype.Component
 import org.springframework.web.bind.annotation.GetMapping
@@ -83,10 +83,11 @@ object AggregatorMicroServices {
     }
 
     @SpringBootApplication
-    @EnableAutoConfiguration(exclude = [GsonAutoConfiguration::class])
+    @EnableAutoConfiguration
+//    @EnableAutoConfiguration(exclude = [GsonAutoConfiguration::class])
     open class AggregatorMicroServicesApp {
         @Bean
-        open fun restTempl(): RestTemplate = RestTemplateBuilder().build()
+        open fun restTempl(): RestTemplate = RestTemplate()
     }
 
     @JvmStatic
@@ -116,7 +117,8 @@ object InfoServices {
     }
 
     @SpringBootApplication
-    @EnableAutoConfiguration(exclude = [GsonAutoConfiguration::class])
+    @EnableAutoConfiguration
+//    @EnableAutoConfiguration(exclude = [GsonAutoConfiguration::class])
     open class InfoServicesApp {}
 
     @JvmStatic
@@ -143,7 +145,7 @@ object InventoryServices {
     }
 
     @SpringBootApplication
-    @EnableAutoConfiguration(exclude = [GsonAutoConfiguration::class])
+    @EnableAutoConfiguration//(exclude = [GsonAutoConfiguration::class])
     open class InventoryServicesApp {}
 
     @JvmStatic

@@ -6,7 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.WebApplicationType
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration
 import org.springframework.boot.autoconfigure.SpringBootApplication
-import org.springframework.boot.autoconfigure.gson.GsonAutoConfiguration
+//import org.springframework.boot.autoconfigure.gson.GsonAutoConfiguration
 import org.springframework.boot.builder.SpringApplicationBuilder
 import org.springframework.stereotype.Component
 import org.springframework.web.bind.annotation.GetMapping
@@ -45,10 +45,10 @@ object ApiGateway {
             log.info("Sending request to fetch price info")
             HttpClient.newHttpClient()
                 .send(HttpRequest.newBuilder()
-                    .GET()
-                    .uri(URI.create("http://localhost:50006/price"))
-                    .build(),
-                        HttpResponse.BodyHandlers.ofString())
+                          .GET()
+                          .uri(URI.create("http://localhost:50006/price"))
+                          .build(),
+                      HttpResponse.BodyHandlers.ofString())
                 .also { logResp(it) }
                 .body()
         }.onFailure { e ->
@@ -77,10 +77,10 @@ object ApiGateway {
             log.info("Sending request to fetch image path")
             HttpClient.newHttpClient()
                 .send(HttpRequest.newBuilder()
-                    .GET()
-                    .uri(URI.create("http://localhost:50005/image-path"))
-                    .build(),
-                        HttpResponse.BodyHandlers.ofString())
+                          .GET()
+                          .uri(URI.create("http://localhost:50005/image-path"))
+                          .build(),
+                      HttpResponse.BodyHandlers.ofString())
                 .also { logResp(it) }
                 .body()
         }.onFailure { e ->
@@ -109,7 +109,7 @@ object ApiGateway {
     }
 
     @SpringBootApplication
-    @EnableAutoConfiguration(exclude = [GsonAutoConfiguration::class])
+    @EnableAutoConfiguration//(exclude = [GsonAutoConfiguration::class])
     open class ApiGatewayApp {
     }
 
@@ -118,10 +118,10 @@ object ApiGateway {
         SpringApplicationBuilder()
             .web(WebApplicationType.SERVLET)
             .sources(ApiGatewayApp::class.java,
-                    ApiGateway::class.java,
-                    ImageClient::class.java,
-                    PriceClient::class.java,
-                    RestTemplate::class.java)
+                     ApiGateway::class.java,
+                     ImageClient::class.java,
+                     PriceClient::class.java,
+                     RestTemplate::class.java)
             .properties(mapOf("server.port" to "50000"))
             .run()
     }
@@ -142,7 +142,7 @@ object ImageServices {
     }
 
     @SpringBootApplication
-    @EnableAutoConfiguration(exclude = [GsonAutoConfiguration::class])
+    @EnableAutoConfiguration//(exclude = [GsonAutoConfiguration::class])
     open class ImageApp {
     }
 
@@ -151,7 +151,7 @@ object ImageServices {
         SpringApplicationBuilder()
             .web(WebApplicationType.SERVLET)
             .sources(ImageApp::class.java,
-                    ImageCtrl::class.java)
+                     ImageCtrl::class.java)
             .properties(mapOf("server.port" to "50005"))
             .run()
     }
@@ -172,7 +172,7 @@ object PriceServices {
     }
 
     @SpringBootApplication
-    @EnableAutoConfiguration(exclude = [GsonAutoConfiguration::class])
+    @EnableAutoConfiguration//(exclude = [GsonAutoConfiguration::class])
     open class PriceApp {
     }
 
@@ -181,7 +181,7 @@ object PriceServices {
         SpringApplicationBuilder()
             .web(WebApplicationType.SERVLET)
             .sources(PriceApp::class.java,
-                    PriceCtrl::class.java)
+                     PriceCtrl::class.java)
             .properties(mapOf("server.port" to "50006"))
             .run()
     }

@@ -12,11 +12,14 @@ import org.springframework.beans.factory.config.BeanPostProcessor
 import org.springframework.boot.WebApplicationType
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration
 import org.springframework.boot.autoconfigure.SpringBootApplication
-import org.springframework.boot.autoconfigure.gson.GsonAutoConfiguration
-import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration
-import org.springframework.boot.autoconfigure.jdbc.DataSourceTransactionManagerAutoConfiguration
-import org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration
+//import org.springframework.boot.autoconfigure.gson.GsonAutoConfiguration
+//import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration
+//import org.springframework.boot.autoconfigure.jdbc.DataSourceTransactionManagerAutoConfiguration
+//import org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration
 import org.springframework.boot.builder.SpringApplicationBuilder
+import org.springframework.boot.hibernate.autoconfigure.HibernateJpaAutoConfiguration
+import org.springframework.boot.jdbc.autoconfigure.DataSourceAutoConfiguration
+import org.springframework.boot.jdbc.autoconfigure.DataSourceTransactionManagerAutoConfiguration
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.context.SpringBootTest.UseMainMethod
 import org.springframework.context.annotation.AnnotationConfigApplicationContext
@@ -64,7 +67,7 @@ open class DummyService : (Any) -> String {
 }
 
 @SpringBootApplication(scanBasePackages = ["cfcodefans.study.spring_field.spring.examples"])
-@EnableAutoConfiguration(exclude = [GsonAutoConfiguration::class,
+@EnableAutoConfiguration(exclude = [//GsonAutoConfiguration::class,
     DataSourceAutoConfiguration::class,
     HibernateJpaAutoConfiguration::class,
     DataSourceTransactionManagerAutoConfiguration::class

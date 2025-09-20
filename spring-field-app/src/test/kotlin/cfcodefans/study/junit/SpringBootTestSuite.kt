@@ -14,19 +14,27 @@ import org.springdoc.webmvc.core.configuration.SpringDocWebMvcConfiguration
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.boot.autoconfigure.SpringBootApplication
-import org.springframework.boot.autoconfigure.gson.GsonAutoConfiguration
-import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration
-import org.springframework.boot.autoconfigure.jdbc.DataSourceTransactionManagerAutoConfiguration
+//import org.springframework.boot.autoconfigure.gson.GsonAutoConfiguration
+//import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration
+//import org.springframework.boot.autoconfigure.jdbc.DataSourceTransactionManagerAutoConfiguration
 import org.springframework.boot.autoconfigure.jmx.JmxAutoConfiguration
-import org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration
-import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration
-import org.springframework.boot.autoconfigure.security.servlet.UserDetailsServiceAutoConfiguration
-import org.springframework.boot.autoconfigure.web.servlet.DispatcherServletAutoConfiguration
-import org.springframework.boot.autoconfigure.web.servlet.ServletWebServerFactoryAutoConfiguration
-import org.springframework.boot.autoconfigure.web.servlet.WebMvcAutoConfiguration
-import org.springframework.boot.autoconfigure.web.servlet.error.ErrorMvcAutoConfiguration
+import org.springframework.boot.hibernate.autoconfigure.HibernateJpaAutoConfiguration
+//import org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration
+//import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration
+//import org.springframework.boot.autoconfigure.security.servlet.UserDetailsServiceAutoConfiguration
+//import org.springframework.boot.autoconfigure.web.servlet.DispatcherServletAutoConfiguration
+//import org.springframework.boot.autoconfigure.web.servlet.ServletWebServerFactoryAutoConfiguration
+//import org.springframework.boot.autoconfigure.web.servlet.WebMvcAutoConfiguration
+//import org.springframework.boot.autoconfigure.web.servlet.error.ErrorMvcAutoConfiguration
+import org.springframework.boot.jdbc.autoconfigure.DataSourceAutoConfiguration
+import org.springframework.boot.jdbc.autoconfigure.DataSourceTransactionManagerAutoConfiguration
+import org.springframework.boot.security.autoconfigure.servlet.SecurityAutoConfiguration
+import org.springframework.boot.security.autoconfigure.servlet.UserDetailsServiceAutoConfiguration
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.context.SpringBootTest.UseMainMethod
+import org.springframework.boot.webmvc.autoconfigure.DispatcherServletAutoConfiguration
+import org.springframework.boot.webmvc.autoconfigure.WebMvcAutoConfiguration
+import org.springframework.boot.webmvc.autoconfigure.error.ErrorMvcAutoConfiguration
 import org.springframework.context.annotation.AnnotationConfigApplicationContext
 import org.springframework.context.annotation.EnableAspectJAutoProxy
 import org.springframework.stereotype.Service
@@ -58,7 +66,7 @@ open class DummyService : (Any) -> String {
 @SpringBootApplication(
         scanBasePackages = ["cfcodefans.study.junit"],
         exclude = [
-            ServletWebServerFactoryAutoConfiguration::class,
+//            ServletWebServerFactoryAutoConfiguration::class,
             DispatcherServletAutoConfiguration::class,
             WebMvcAutoConfiguration::class,
             ErrorMvcAutoConfiguration::class,
@@ -73,7 +81,7 @@ open class DummyService : (Any) -> String {
             DataSourceTransactionManagerAutoConfiguration::class,
 
             JmxAutoConfiguration::class,
-            GsonAutoConfiguration::class
+//            GsonAutoConfiguration::class
         ])
 @EnableAspectJAutoProxy(proxyTargetClass = false)
 open class DummySpringBootApp {

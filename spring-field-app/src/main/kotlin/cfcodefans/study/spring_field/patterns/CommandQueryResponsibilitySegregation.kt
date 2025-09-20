@@ -8,9 +8,7 @@ import org.hibernate.cfg.Configuration
 import org.hibernate.service.ServiceRegistry
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import java.lang.NullPointerException
 import java.math.BigDecimal
-import java.math.BigInteger
 import java.util.*
 
 /**
@@ -27,19 +25,18 @@ object CommandQueryResponsibilitySegregation {
 
     @Entity(name = "Author")
     @Table(name = "author")
-    data class Author(
-            @Id
-            @GeneratedValue(strategy = GenerationType.IDENTITY)
-            var id: Long? = null,
-            var username: String = "",
-            var name: String = "",
-            var email: String = "") {
+    data class Author(@Id
+                      @GeneratedValue(strategy = GenerationType.IDENTITY)
+                      var id: Long? = null,
+                      var username: String = "",
+                      var name: String = "",
+                      var email: String = "") {
         override fun equals(other: Any?): Boolean = other is Author
                 && ((other.id != null && this.id != null && other.id == this.id)
                 || (username == other.username && username.isNotBlank()))
 
         override fun hashCode(): Int = Objects.hash(Author::class,
-                if (id != null) id.hashCode() else username)
+                                                    if (id != null) id.hashCode() else username)
     }
 
     @Entity(name = "Book")
@@ -101,7 +98,7 @@ object CommandQueryResponsibilitySegregation {
                 s.createQuery("""
                 select b from Author a, Book b 
                 where b.author.id = a.id and a.username = :username""".trimIndent(),
-                        Book::class.java)
+                              Book::class.java)
                     .setParameter(USER_NAME, username)
                     .resultList
                     .map { it.toDTO() }
@@ -159,11 +156,11 @@ object CommandQueryResponsibilitySegregation {
             } ?: throw NullPointerException("Book $title is not found")
 
         override fun authorCreated(username: String, name: String, email: String) {
-            tx { s -> s.save(Author(username = username, name = name, email = email)) }
+            tx { s -> s.persist(Author(username = username, name = name, email = email)) }
         }
 
         override fun bookAddedToAuthor(title: String, price: BigDecimal, username: String) {
-            tx { s -> s.save(Book(title = title, price = price, author = getAuthorByUsername(username))) }
+            tx { s -> s.persist(Book(title = title, price = price, author = getAuthorByUsername(username))) }
         }
 
         override fun authorNameUpdated(username: String, name: String) {
@@ -213,15 +210,14 @@ object CommandQueryResponsibilitySegregation {
 
     val SESSION_FACTORY: SessionFactory = StandardServiceRegistryBuilder()
         .let {
-            val cfgs: Map<String, String> = mapOf(
-                    "hibernate.connection.driver_class" to "org.hsqldb.jdbc.JDBCDriver",
-                    "hibernate.connection.url" to "jdbc:hsqldb:mem:test",
-                    "hibernate.connection.username" to "sa",
-                    "hibernate.connection.password" to "",
-                    "hibernate.dialect" to "org.hibernate.dialect.HSQLDialect",
-                    "hibernate.show_sql" to "true",
-                    "hibernate.format_sql" to "true",
-                    "hibernate.hbm2ddl.auto" to "create-drop")
+            val cfgs: Map<String, String> = mapOf("hibernate.connection.driver_class" to "org.hsqldb.jdbc.JDBCDriver",
+                                                  "hibernate.connection.url" to "jdbc:hsqldb:mem:test",
+                                                  "hibernate.connection.username" to "sa",
+                                                  "hibernate.connection.password" to "",
+                                                  "hibernate.dialect" to "org.hibernate.dialect.HSQLDialect",
+                                                  "hibernate.show_sql" to "true",
+                                                  "hibernate.format_sql" to "true",
+                                                  "hibernate.hbm2ddl.auto" to "create-drop")
             val config: Configuration = Configuration()
                 .apply {
                     cfgs.forEach { it -> this.setProperty(it.key, it.value) }

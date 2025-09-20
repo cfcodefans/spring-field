@@ -23,7 +23,6 @@ import org.springframework.http.HttpHeaders
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
 import org.springframework.security.authentication.BadCredentialsException
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
 import org.springframework.security.config.Customizer
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
@@ -37,8 +36,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException
 import org.springframework.security.crypto.password.NoOpPasswordEncoder
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.security.web.SecurityFilterChain
-import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter
-import org.springframework.security.web.util.matcher.AntPathRequestMatcher
+import org.springframework.security.web.servlet.util.matcher.PathPatternRequestMatcher
 import org.springframework.security.web.util.matcher.RequestMatcher
 import org.springframework.stereotype.Service
 import org.springframework.web.bind.annotation.*
@@ -47,6 +45,8 @@ import org.springframework.web.util.WebUtils
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import java.util.*
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken as PassAuthToken
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter as PassAuthFilter
 
 @RestController
 @RequestMapping("/api")
@@ -77,7 +77,7 @@ open class AuthRes {
                  produces = [MediaType.TEXT_PLAIN_VALUE])
     open fun login(@RequestBody req: AuthReq, resp: HttpServletResponse): ResponseEntity<AuthResp> {
         try {
-            authCfg.authenticationManager.authenticate(UsernamePasswordAuthenticationToken(req.username, req.pwd))
+            authCfg.authenticationManager.authenticate(PassAuthToken(req.username, req.pwd))
         } catch (e: BadCredentialsException) {
             throw Exception("invalid username or password", e)
         }
@@ -123,7 +123,7 @@ open class JwtFilter(open val mockUserDetailService: UserDetailsService,
                 if (claims.expiration.before(Date()))
                     throw Exception("token expired")
 
-                SecurityContextHolder.getContext().authentication = UsernamePasswordAuthenticationToken(username, null, emptyList<SimpleGrantedAuthority>())
+                SecurityContextHolder.getContext().authentication = PassAuthToken(username, null, emptyList<SimpleGrantedAuthority>())
             } catch (e: Exception) {
                 resp.sendError(HttpServletResponse.SC_UNAUTHORIZED, e.message)
                 return
@@ -150,10 +150,10 @@ open class SecurityConfig {
 
     @Bean(name = ["protectedResMatcher"])
     @Qualifier("protectedResMatcher")
-    open fun apiRequestMatcher(): RequestMatcher = AntPathRequestMatcher("/api/**")
+    open fun apiRequestMatcher(): RequestMatcher = PathPatternRequestMatcher.pathPattern("/api/**")
 
     @Bean
-    open fun authRequestMatcher(): RequestMatcher = AntPathRequestMatcher("/authenticate")
+    open fun authRequestMatcher(): RequestMatcher = PathPatternRequestMatcher.pathPattern("/authenticate")
 
     @Autowired
     open lateinit var mockUserDetailService: UserDetailsService
@@ -162,7 +162,7 @@ open class SecurityConfig {
     @Bean
     open fun configure(http: HttpSecurity): SecurityFilterChain = http
         .csrf { customizer -> customizer.disable() }
-        .addFilterBefore(JwtFilter(mockUserDetailService, apiRequestMatcher()), UsernamePasswordAuthenticationFilter::class.java)
+        .addFilterBefore(JwtFilter(mockUserDetailService, apiRequestMatcher()), PassAuthFilter::class.java)
         .userDetailsService(mockUserDetailService)
         .authorizeHttpRequests { customizer ->
             customizer
