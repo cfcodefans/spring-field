@@ -6,13 +6,13 @@ import org.apache.lucene.document.*
 import org.apache.lucene.index.DirectoryReader
 import org.apache.lucene.index.IndexWriter
 import org.apache.lucene.index.IndexWriterConfig
-import org.apache.lucene.search.IndexSearcher
-import org.apache.lucene.search.MatchAllDocsQuery
-import org.apache.lucene.search.ScoreDoc
-import org.apache.lucene.search.TopDocs
+import org.apache.lucene.index.StoredFields
+import org.apache.lucene.queryparser.classic.QueryParser
+import org.apache.lucene.search.*
 import org.apache.lucene.store.ByteBuffersDirectory
 import org.apache.lucene.store.Directory
 import org.junit.jupiter.api.*
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.nio.ByteBuffer
@@ -25,6 +25,8 @@ import java.util.concurrent.atomic.AtomicLong
 open class LuceneTests {
     companion object {
         val log: Logger = LoggerFactory.getLogger(LuceneTests::class.java)
+
+        fun Query.info(): String = "${this.javaClass.name}: $this"
 
         /**
          * Converts a Long to a big-endian byte array.
@@ -70,9 +72,7 @@ open class LuceneTests {
              */
             fun toLuceneDoc(): Document = Document().also { doc: Document ->
                 // --- ID ---
-                doc.add(StoredField("id", id)) // For retrieval
-                doc.add(LongPoint("id_point", id)) // For fast point/range queries
-                doc.add(NumericDocValuesField("id_sort", id)) // For efficient numeric sorting
+                doc.add(LongField("id", id, Field.Store.YES)) // For retrieval
 
                 // --- Name & Kind (Full-text search) ---
                 doc.add(TextField("name", name, Field.Store.YES))
@@ -80,13 +80,11 @@ open class LuceneTests {
 
                 // --- Timestamps ---
                 val createdEpoch: Long = this.createdAt.toInstant(ZoneOffset.UTC).toEpochMilli()
-                doc.add(StoredField("createdAt", createdEpoch))
-                doc.add(LongPoint("createdAt_point", createdEpoch))
+                doc.add(LongField("createdAt", createdEpoch, Field.Store.YES))
                 doc.add(NumericDocValuesField("createdAt_sort", createdEpoch))
 
                 val updatedEpoch: Long = this.updatedAt.toInstant(ZoneOffset.UTC).toEpochMilli()
-                doc.add(StoredField("updatedAt", updatedEpoch))
-                doc.add(LongPoint("updatedAt_point", updatedEpoch))
+                doc.add(LongField("updatedAt", updatedEpoch, Field.Store.YES))
                 doc.add(NumericDocValuesField("updatedAt_sort", updatedEpoch))
 
                 // --- Tags (Keyword for filtering, sorting, faceting) ---
@@ -148,6 +146,8 @@ open class LuceneTests {
     @Test
     @Order(0)
     open fun `index mock data and verify count`() {
+        if (controlDataEntries.isNotEmpty()) return
+
         controlDataEntries = (LuceneTests::class
             .java
             .getResourceAsStream("/cfcodefans/study/lucene/mock-data-1.json")
@@ -166,30 +166,96 @@ open class LuceneTests {
             }
     }
 
+    private fun <T> queryHelper(op: (searcher: IndexSearcher) -> T?): T? {
+        DirectoryReader.open(dir).use { reader: DirectoryReader ->
+            val searcher: IndexSearcher = IndexSearcher(reader)
+            return op(searcher)
+        }
+    }
+
     @Test
     @Order(1)
     open fun `fetch all docs from dir`() {
         `index mock data and verify count`()
 
-        DirectoryReader.open(dir).use { reader: DirectoryReader ->
-            val searcher: IndexSearcher = IndexSearcher(reader)
+        queryHelper { searcher: IndexSearcher ->
             val query: MatchAllDocsQuery = MatchAllDocsQuery()
             // When using MatchAllDocsQuery, it's efficient to ask for reader.maxDoc() hits
-            val hits: Int = reader.maxDoc().also { log.info("reader.maxDoc() = $it") }
+            val hits: Int = searcher.indexReader.maxDoc().also { log.info("reader.maxDoc() = $it") }
             val topDocs: TopDocs = searcher.search(query, hits)
             log.info("Successfully fetched ${topDocs.scoreDocs.size} documents.")
             Assertions.assertEquals(controlDataEntries.size, topDocs.scoreDocs.size)
+            val storedFields: StoredFields = searcher.storedFields()
+
             topDocs.scoreDocs
-                .map { scoreDoc: ScoreDoc -> searcher.storedFields().document(scoreDoc.doc) }
-                .map { doc: Document -> DataEntry(doc) }
-                .toList()
-                .also { list ->
-                    log.info(list.first().toString())
-                }.also { list ->
-                    Assertions.assertEquals(controlDataEntries.sortedBy { it.id },
-                                            list.sortedBy { it.id })
-                }
-        }
+                .map { scoreDoc: ScoreDoc -> storedFields.document(scoreDoc.doc) }
+        }?.mapNotNull { doc: Document -> DataEntry(doc) }
+            ?.also { list -> log.info(list.first().toString()) }
+            ?.also { list ->
+                Assertions.assertEquals(controlDataEntries.sortedBy { it.id },
+                                        list.sortedBy { it.id })
+            }
+    }
+
+    @Test
+    @Order(2)
+    open fun `query by specific id`() {
+        this.`index mock data and verify count`()
+
+        val thirdEntry: DataEntry? = controlDataEntries.find { it.id == 3L }
+        queryHelper { searcher: IndexSearcher ->
+            val storedFields: StoredFields = searcher.storedFields()
+//            QueryParser("id", analyzer)
+//                .parse("id:3")
+            LongField.newExactQuery("id", 3)
+                .also { log.info("query: ${it}") }
+                .let { query -> searcher.search(query, 10) }
+                .also { log.info("totalHits: ${it.totalHits}") }
+                .scoreDocs
+                .map { scoreDoc: ScoreDoc -> storedFields.document(scoreDoc.doc) }
+                .map { DataEntry(it) }
+        }.let { reList -> assertEquals(reList?.firstOrNull(), thirdEntry) }
+    }
+
+    @Test
+    @Order(3)
+    open fun `query by range of id`() {
+        this.`index mock data and verify count`()
+
+        val subList: List<DataEntry> = controlDataEntries.filter { it.id in 10L..20 }
+        queryHelper { searcher: IndexSearcher ->
+            val storedFields: StoredFields = searcher.storedFields()
+//            QueryParser("id", analyzer)
+//                .parse("id:[10 TO 20]")
+            LongField.newRangeQuery("id", 10, 20)
+                .also { log.info("query: ${it}") }
+                .let { query -> searcher.search(query, 15) }
+                .also { log.info("totalHits: ${it.totalHits}") }
+                .scoreDocs
+                .map { scoreDoc: ScoreDoc -> storedFields.document(scoreDoc.doc) }
+                .map { DataEntry(it) }
+        }.let { reList -> assertEquals(subList, reList) }
+    }
+
+    @Test
+    open fun `compare queries`() {
+        this.`index mock data and verify count`()
+        
+        var parse: Query = QueryParser("id", analyzer)
+            .parse("id:[10 TO 20]")
+        var newRangeQuery: Query = LongField.newRangeQuery("id", 10, 20)
+        log.info("""compare queries
+            ${parse.info()}
+            ${newRangeQuery.info()}
+            ${parse == newRangeQuery}""".trimIndent())
+
+        parse = QueryParser("id", analyzer)
+            .parse("id:3")
+        newRangeQuery = LongField.newExactQuery("id", 3)
+        log.info("""compare queries
+            ${parse.info()}
+            ${newRangeQuery.info()}
+            ${parse == newRangeQuery}""".trimIndent())
     }
 
     @Test
