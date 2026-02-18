@@ -33,7 +33,8 @@ open class ConsumingRestApp {
  * refers to https://github.com/spring-guides/gs-consuming-rest/tree/main/complete
  */
 @ExtendWith(SpringExtension::class)
-@SpringBootTest(classes = [ConsumingRestApp::class])
+@SpringBootTest(classes = [ConsumingRestApp::class],
+                value = ["spring.profiles.active=lab"])
 open class ConsumingRestTests {
     companion object {
         val log: Logger = LoggerFactory.getLogger(ConsumingRestTests::class.java)

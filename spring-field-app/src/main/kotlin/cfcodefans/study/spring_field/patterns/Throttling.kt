@@ -63,7 +63,7 @@ object Throttling {
             val tenantName: String = barCustomer.name
             val count: Long = callsCount.getCount(tenantName)
             if (count >= barCustomer.allowedCallsPerSecond) {
-                log.error("I'am sorry $tenantName, you've had $count drinks for today")
+                log.error("I'm sorry $tenantName, you've had $count drinks for today")
                 return -1
             }
 
