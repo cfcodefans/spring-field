@@ -3,9 +3,13 @@ package cfcodefans.study.lang.kotlin
 import cfcodefans.study.spring_field.commons.Jsons
 import com.fasterxml.jackson.databind.JsonNode
 import kotlinx.coroutines.*
+import org.jetbrains.kotlin.utils.addToStdlib.measureTimeMillisWithResult
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import kotlin.concurrent.thread
 import kotlin.coroutines.CoroutineContext
+import kotlin.math.sqrt
+import kotlin.system.measureTimeMillis
 import kotlin.test.Test
 
 
@@ -48,5 +52,71 @@ open class CoroutineTests {
             log.info(this.info().toPrettyString())
         }
         log.info("Done")
+    }
+
+    /**
+     * refers to https://youtu.be/0Hv5LTxAutw?si=E9su0zohkAi6oYkG
+     */
+    @Test
+    fun `heavy cpu computation`() {
+        log.info("heavy cpu computation start {")
+        measureTimeMillis {
+            (1..100_000_000).forEach { sqrt(it.toDouble()) }
+        }.let { log.info("} heavy cpu computation took $it ms") }
+    }
+
+    @Test
+    fun `heavy cpu computation in thread`() {
+        log.info("heavy cpu computation start in thread {")
+        measureTimeMillisWithResult {
+            (1..3).map {
+                thread {
+                    this.`heavy cpu computation`()
+                }
+            }
+        }.also { log.info("} heavy cpu computation in thread took ${it.first} ms") }
+            .also { it.second.forEach { t -> t.join() } }
+    }
+
+    suspend fun `heavy cpu computation in suspend function`() {
+        log.info("heavy cpu computation start in suspend function {")
+        measureTimeMillis {
+            this.`heavy cpu computation`()
+        }.let { log.info("} heavy cpu computation took in suspend function $it ms") }
+    }
+
+    @Test
+    fun `heavy cpu computation in Coroutine`() {
+        log.info("heavy cpu computation start in Coroutine {")
+        measureTimeMillisWithResult {
+            CoroutineScope(Dispatchers.Default).launch {
+                (1..3).map {
+                    launch {
+                        `heavy cpu computation in suspend function`()
+                    }
+                }
+            }
+        }.also { job ->
+            runBlocking {
+                job.second.join()
+            }
+        }.also { log.info("} heavy cpu computation in Coroutine took ${it.first} ms") }
+    }
+
+    @Test
+    fun `heavy cpu computation in Coroutine batch`() {
+        log.info("heavy cpu computation start in Coroutine batch {")
+        measureTimeMillisWithResult {
+            CoroutineScope(Dispatchers.Default).launch {
+                (1..3).map {
+                    `heavy cpu computation in suspend function`()
+                }
+            }
+        }.also { log.info("} heavy cpu computation in Coroutine batch took ${it.first} ms") }
+            .let { job ->
+                runBlocking {
+                    job.second.join()
+                }
+            }
     }
 }

@@ -80,7 +80,7 @@ fun main(args: Array<String>) {
 @ControllerAdvice
 open class ApiExceptionHandler : ResponseEntityExceptionHandler() {
     companion object {
-        private val log = LoggerFactory.getLogger(ApiExceptionHandler::class.java)
+        private val log: Logger = LoggerFactory.getLogger(ApiExceptionHandler::class.java)
 
         private fun logReq(ex: Exception, status: HttpStatus, req: WebRequest) {
             log.error("""Exception ${ex.message} thrown at
