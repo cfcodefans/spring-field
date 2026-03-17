@@ -30,14 +30,12 @@ open class EncodingTests {
                                "HmacSHA512"))
 
         run {
-            val paramStr: String =
-                "ARTICLENR=166&CITY=Philadelphia&COUNTRY=US&DOMAIN_FOR_IFRAME=https://www.fetish.com&EMAIL=malikfortune08@gmail.com&FIRSTNAME=Maya?s&HOUSENR=2&IP=71.162.209.51&LANGUAGE=EN&LASTNAME=James&PAGENUMBER=fetco&PAYMENTTYPE=CC&SALUTATION=1M&STREET=2405 n broad st&TANR=43039587&TESTSIGNUP=FALSE&USERNR=4028644&ZIPCODE=19132"
+            val paramStr: String = ""
             val result: String = bytesToHex(mac.doFinal(paramStr.toByteArray(StandardCharsets.UTF_8)))
             log.info("parameter: $paramStr\n\tresult = $result")
         }
         run {
-            val paramStr: String =
-                "ARTICLENR=166&CITY=Philadelphia&COUNTRY=US&DOMAIN_FOR_IFRAME=https://www.fetish.com&EMAIL=malikfortune08@gmail.com&FIRSTNAME=Maya’s&HOUSENR=2&IP=71.162.209.51&LANGUAGE=EN&LASTNAME=James&PAGENUMBER=fetco&PAYMENTTYPE=CC&SALUTATION=1M&STREET=2405 n broad st&TANR=43039587&TESTSIGNUP=FALSE&USERNR=4028644&ZIPCODE=19132"
+            val paramStr: String = ""
             val result = bytesToHex(mac.doFinal(paramStr.toByteArray(StandardCharsets.UTF_8)))
             log.info("parameter: $paramStr\n\tresult = $result")
         }
