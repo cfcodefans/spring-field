@@ -150,10 +150,10 @@ open class SecurityConfig {
 
     @Bean(name = ["protectedResMatcher"])
     @Qualifier("protectedResMatcher")
-    open fun apiRequestMatcher(): RequestMatcher = PathPatternRequestMatcher.pathPattern("/api/**")
+    open fun apiRequestMatcher(): RequestMatcher = PathPatternRequestMatcher.withDefaults().matcher("/api")
 
     @Bean
-    open fun authRequestMatcher(): RequestMatcher = PathPatternRequestMatcher.pathPattern("/authenticate")
+    open fun authRequestMatcher(): RequestMatcher = PathPatternRequestMatcher.withDefaults().matcher("/api")
 
     @Autowired
     open lateinit var mockUserDetailService: UserDetailsService

@@ -2,25 +2,15 @@ package cfcodefans.study.spring_field
 
 import org.springdoc.core.configuration.SpringDocConfiguration
 import org.springdoc.webmvc.core.configuration.SpringDocWebMvcConfiguration
-//import org.springframework.boot.autoconfigure.gson.GsonAutoConfiguration
-//import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration
-//import org.springframework.boot.autoconfigure.jdbc.DataSourceTransactionManagerAutoConfiguration
+import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration
+import org.springframework.boot.autoconfigure.jdbc.DataSourceTransactionManagerAutoConfiguration
 import org.springframework.boot.autoconfigure.jmx.JmxAutoConfiguration
-import org.springframework.boot.hibernate.autoconfigure.HibernateJpaAutoConfiguration
-//import org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration
-//import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration
-//import org.springframework.boot.autoconfigure.security.servlet.UserDetailsServiceAutoConfiguration
-//import org.springframework.boot.autoconfigure.web.servlet.DispatcherServletAutoConfiguration
-//import org.springframework.boot.autoconfigure.web.servlet.ServletWebServerFactoryAutoConfiguration
-//import org.springframework.boot.autoconfigure.web.servlet.WebMvcAutoConfiguration
-//import org.springframework.boot.autoconfigure.web.servlet.error.ErrorMvcAutoConfiguration
-import org.springframework.boot.jdbc.autoconfigure.DataSourceAutoConfiguration
-import org.springframework.boot.jdbc.autoconfigure.DataSourceTransactionManagerAutoConfiguration
-import org.springframework.boot.security.autoconfigure.servlet.SecurityAutoConfiguration
-import org.springframework.boot.security.autoconfigure.servlet.UserDetailsServiceAutoConfiguration
-import org.springframework.boot.webmvc.autoconfigure.DispatcherServletAutoConfiguration
-import org.springframework.boot.webmvc.autoconfigure.WebMvcAutoConfiguration
-import org.springframework.boot.webmvc.autoconfigure.error.ErrorMvcAutoConfiguration
+import org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration
+import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration
+import org.springframework.boot.autoconfigure.security.servlet.UserDetailsServiceAutoConfiguration
+import org.springframework.boot.autoconfigure.web.servlet.DispatcherServletAutoConfiguration
+import org.springframework.boot.autoconfigure.web.servlet.WebMvcAutoConfiguration
+import org.springframework.boot.autoconfigure.web.servlet.error.ErrorMvcAutoConfiguration
 import kotlin.reflect.KClass
 
 object Constants {
