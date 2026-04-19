@@ -1,4 +1,4 @@
-package cfcodefans.study.spring_field.spring.examples
+package cfcodefans.study.spring_field.spring.examples.rest_service
 
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
@@ -7,7 +7,10 @@ import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.SpringApplication
 import org.springframework.boot.autoconfigure.SpringBootApplication
+import org.springframework.boot.security.autoconfigure.SecurityAutoConfiguration
+import org.springframework.boot.security.autoconfigure.UserDetailsServiceAutoConfiguration
 import org.springframework.boot.test.context.SpringBootTest
+import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc
 import org.springframework.test.context.junit.jupiter.SpringExtension
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
@@ -19,6 +22,14 @@ import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 import java.util.concurrent.atomic.AtomicLong
 
+/**
+ * Test-only overrides when using the `lab` profile (`application-lab.properties`).
+ * Lab sets `server.servlet.context-path=/context`; MockMvc here uses "/" URIs.
+ */
+private object RestServiceTestSpringProperties {
+    const val ACTIVE_PROFILE_LAB: String = "spring.profiles.active=lab"
+    const val SERVLET_CONTEXT_PATH_ROOT: String = "server.servlet.context-path=/"
+}
 
 data class Greeting(val id: Long, val content: String)
 
@@ -36,7 +47,13 @@ open class GreetingCtl {
     }
 }
 
-@SpringBootApplication
+@SpringBootApplication(
+        exclude = [
+            SecurityAutoConfiguration::class,
+            UserDetailsServiceAutoConfiguration::class,
+        ],
+        scanBasePackages = ["cfcodefans.study.spring_field.spring.examples.rest_service"]
+)
 open class GSRestServiceApp {
     companion object {
         val log: Logger = LoggerFactory.getLogger(GSRestServiceApp::class.java)
@@ -53,7 +70,15 @@ fun main(args: Array<String>) {
  * https://github.com/spring-guides/gs-rest-service/blob/main/complete/src/test/java/com/example/restservice/GreetingControllerTests.java
  */
 @ExtendWith(SpringExtension::class)
-@SpringBootTest(classes = [GSRestServiceApp::class])
+@SpringBootTest(
+    classes = [GSRestServiceApp::class],
+    webEnvironment = SpringBootTest.WebEnvironment.MOCK,
+    properties = [
+        RestServiceTestSpringProperties.ACTIVE_PROFILE_LAB,
+        RestServiceTestSpringProperties.SERVLET_CONTEXT_PATH_ROOT,
+    ],
+)
+@AutoConfigureMockMvc(addFilters = false)
 open class RestServiceTests {
     companion object {
         val log: Logger = LoggerFactory.getLogger(RestServiceTests::class.java)
@@ -75,6 +100,6 @@ open class RestServiceTests {
         mockMvc.perform(get("/greeting").param("name", "Spring Community"))
             .andDo(print())
             .andExpect(status().isOk)
-            .andExpect(jsonPath("$.content").value("Hello, World!"))
+            .andExpect(jsonPath("$.content").value("Hello, Spring Community!"))
     }
 }
