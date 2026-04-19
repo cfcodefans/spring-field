@@ -1,14 +1,12 @@
 package cfcodefans.study.spring_field.spring.examples.rest_service
 
+import cfcodefans.study.spring_field.spring.boot.SpringBootApplicationWithoutSecurity
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.SpringApplication
-import org.springframework.boot.autoconfigure.SpringBootApplication
-import org.springframework.boot.security.autoconfigure.SecurityAutoConfiguration
-import org.springframework.boot.security.autoconfigure.UserDetailsServiceAutoConfiguration
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc
 import org.springframework.test.context.junit.jupiter.SpringExtension
@@ -47,12 +45,8 @@ open class GreetingCtl {
     }
 }
 
-@SpringBootApplication(
-        exclude = [
-            SecurityAutoConfiguration::class,
-            UserDetailsServiceAutoConfiguration::class,
-        ],
-        scanBasePackages = ["cfcodefans.study.spring_field.spring.examples.rest_service"]
+@SpringBootApplicationWithoutSecurity(
+    scanBasePackages = ["cfcodefans.study.spring_field.spring.examples.rest_service"],
 )
 open class GSRestServiceApp {
     companion object {
