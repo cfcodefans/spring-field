@@ -14,9 +14,9 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <kotlin.code.style>official</kotlin.code.style>
-        <kotlin.compiler.jvmTarget>20</kotlin.compiler.jvmTarget>
+        <kotlin.compiler.jvmTarget>21</kotlin.compiler.jvmTarget>
         <kotlin.version>2.2.0</kotlin.version>
-        <spring-boot.version>3.5.11</spring-boot.version>
+        <spring-boot.version>4.0.5</spring-boot.version>
         <springfox.version>2.9.2</springfox.version>
     </properties>
 
@@ -108,12 +108,12 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
-                <version>3.0.0-M7</version>
+                <version>3.5.5</version>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-failsafe-plugin</artifactId>
-                <version>3.0.0-M7</version>
+                <version>3.5.5</version>
             </plugin>
             <plugin>
                 <groupId>org.springframework.boot</groupId>
@@ -177,7 +177,7 @@
             <dependency>
                 <groupId>org.springframework.ai</groupId>
                 <artifactId>spring-ai-bom</artifactId>
-                <version>1.0.0</version>
+                <version>1.1.4</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
@@ -193,7 +193,7 @@
         <dependency>
             <groupId>org.springframework.ai</groupId>
             <artifactId>spring-ai-starter-model-ollama</artifactId>
-            <version>1.0.0</version>
+            <version>1.1.3</version>
             <exclusions>
                 <exclusion>
                     <groupId>ch.qos.logback</groupId>
@@ -208,7 +208,7 @@
         <dependency>
             <groupId>org.springframework.ai</groupId>
             <artifactId>spring-ai-bom</artifactId>
-            <version>1.0.0</version>
+            <version>1.1.3</version>
             <type>pom</type>
         </dependency>
         <dependency>
@@ -301,13 +301,13 @@
         <dependency>
             <groupId>com.fasterxml.jackson.module</groupId>
             <artifactId>jackson-module-kotlin</artifactId>
-            <version>2.20.0-rc1</version>
+            <version>2.21.2</version>
         </dependency>
 
         <dependency>
             <groupId>org.hsqldb</groupId>
             <artifactId>hsqldb</artifactId>
-            <version>2.7.3</version>
+            <version>2.7.4</version>
         </dependency>
 
         <dependency>
@@ -414,14 +414,15 @@
         </dependency>
 
 
+        <!-- Source: https://mvnrepository.com/artifact/com.h2database/h2 -->
         <dependency>
             <groupId>com.h2database</groupId>
             <artifactId>h2</artifactId>
-            <scope>runtime</scope>
-            <version>2.1.214</version>
+            <version>2.4.240</version>
+            <scope>test</scope>
         </dependency>
-        <dependency>
 
+        <dependency>
             <groupId>io.jsonwebtoken</groupId>
             <artifactId>jjwt</artifactId>
             <version>0.12.3</version>
@@ -479,7 +480,7 @@
         <dependency>
             <groupId>org.apache.zookeeper</groupId>
             <artifactId>zookeeper</artifactId>
-            <version>3.9.2</version>
+            <version>3.9.5</version>
             <exclusions>
                 <exclusion>
                     <groupId>ch.qos.logback</groupId>
@@ -558,7 +559,12 @@
         <dependency>
             <groupId>org.apache.solr</groupId>
             <artifactId>solr-core</artifactId>
-            <version>9.9.0</version>
+            <version>10.0.0</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.solr</groupId>
+            <artifactId>solr-solrj</artifactId>
+            <version>10.0.0</version>
         </dependency>
     </dependencies>
 

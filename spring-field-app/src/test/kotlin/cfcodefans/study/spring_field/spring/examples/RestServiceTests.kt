@@ -7,7 +7,6 @@ import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.SpringApplication
 import org.springframework.boot.autoconfigure.SpringBootApplication
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.test.context.junit.jupiter.SpringExtension
 import org.springframework.test.web.servlet.MockMvc
@@ -55,7 +54,6 @@ fun main(args: Array<String>) {
  */
 @ExtendWith(SpringExtension::class)
 @SpringBootTest(classes = [GSRestServiceApp::class])
-@AutoConfigureMockMvc
 open class RestServiceTests {
     companion object {
         val log: Logger = LoggerFactory.getLogger(RestServiceTests::class.java)
