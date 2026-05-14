@@ -1,0 +1,44 @@
+package cfcodefans.study.spring_field.graphql.spqr
+
+import org.hamcrest.Matchers.containsString
+import org.hamcrest.Matchers.greaterThan
+import org.junit.jupiter.api.Test
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.boot.test.context.SpringBootTest
+import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc
+import org.springframework.http.MediaType
+import org.springframework.test.context.ActiveProfiles
+import org.springframework.test.web.servlet.MockMvc
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers.*
+
+@SpringBootTest(classes = [GraphSpqrWebApp::class], webEnvironment = SpringBootTest.WebEnvironment.MOCK)
+@AutoConfigureMockMvc
+@ActiveProfiles("graphql-spqr-web")
+open class SpqrGraphQlApiTests {
+
+    @Autowired
+    private lateinit var mockMvc: MockMvc
+
+    @Test
+    fun `GET graphql schema returns SDL text`() {
+        mockMvc
+            .perform(get("/graphql/schema").accept(MediaType.TEXT_PLAIN))
+            .andExpect(status().isOk)
+            .andExpect(content().contentTypeCompatibleWith(MediaType.TEXT_PLAIN))
+            .andExpect(content().string(containsString("type Query")))
+    }
+
+    @Test
+    fun `POST graphql returns seeded entities`() {
+        val body: String = """{"query":"query { entities { id entityType name } }"}"""
+        mockMvc
+            .perform(post("/graphql")
+                         .contentType(MediaType.APPLICATION_JSON)
+                         .content(body))
+            .andExpect(status().isOk)
+            .andExpect(jsonPath("$.data.entities.length()")
+                           .value(greaterThan(0)))
+    }
+}

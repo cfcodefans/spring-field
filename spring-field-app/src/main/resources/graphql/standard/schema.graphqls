@@ -1,0 +1,45 @@
+type GraphEntity {
+  id: ID!
+  """Entity classification (e.g. node, edge, person, document)."""
+  entityType: String!
+  name: String!
+  parentId: ID
+  data: String
+  note: String
+  tags: [String!]!
+  createdAt: String!
+  updatedAt: String!
+}
+
+input CreateGraphEntityInput {
+  entityType: String!
+  name: String!
+  parentId: ID
+  data: String
+  note: String
+  tags: [String!]
+}
+
+input UpdateGraphEntityInput {
+  id: ID!
+  entityType: String
+  name: String
+  parentId: ID
+  data: String
+  note: String
+  tags: [String!]
+}
+
+type Query {
+  entities: [GraphEntity!]!
+  entity(id: ID!): GraphEntity
+  entitiesByType(entityType: String!): [GraphEntity!]!
+  """When parentId is omitted, returns root entities (no parent)."""
+  entitiesByParent(parentId: ID): [GraphEntity!]!
+}
+
+type Mutation {
+  createEntity(input: CreateGraphEntityInput!): GraphEntity!
+  updateEntity(input: UpdateGraphEntityInput!): GraphEntity!
+  deleteEntity(id: ID!): Boolean!
+}
