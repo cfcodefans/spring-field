@@ -119,14 +119,14 @@ object Jsons {
     fun toNode(any: Any?): JsonNode = try {
         if (any == null) MAPPER.nullNode()
         else MAPPER.convertValue(any,
-                when (any) {
-                    is Boolean -> BooleanNode::class.java
-                    is Char -> TextNode::class.java
-                    is String -> TextNode::class.java
-                    is Number -> DecimalNode::class.java
-                    is Map<*, *> -> POJONode::class.java
-                    else -> ObjectNode::class.java
-                })
+                                 when (any) {
+                                     is Boolean -> BooleanNode::class.java
+                                     is Char -> TextNode::class.java
+                                     is String -> TextNode::class.java
+                                     is Number -> DecimalNode::class.java
+                                     is Map<*, *> -> POJONode::class.java
+                                     else -> ObjectNode::class.java
+                                 })
     } catch (e: Exception) {
         throw RuntimeException("serialize object to json\n\t${any}", e)
     }

@@ -112,6 +112,7 @@ open class ContainerExtensionPointTests {
         log.info(appCxt::class.qualifiedName)
 
         appCxt.beanDefinitionNames
+            .asSequence()
             .map { name -> appCxt.getBeanDefinition(name) }
             .filter { b -> b.beanClassName?.contains("cfcodefans") == true }
             .map { bd -> "${bd.factoryBeanName}\t${bd.beanClassName}" }

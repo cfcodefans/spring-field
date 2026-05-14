@@ -18,18 +18,18 @@ import java.time.format.DateTimeFormatter
 import io.swagger.v3.oas.annotations.parameters.RequestBody as ReqBody
 
 @Schema(name = "DummyForm")
-data class DummyForm(@Parameter(required = true, name = "username") val username: String,
-                     @Parameter(required = true, name = "password") val password: String,
+data class DummyForm(@field:Parameter(required = true, name = "username") val username: String,
+                     @field:Parameter(required = true, name = "password") val password: String,
                      @Hidden val createdAt: LocalDateTime = LocalDateTime.now()) {
     override fun toString(): String = Jsons.toString(this)
 }
 
 @Schema(name = "DummyForm2")
-data class DummyForm2(@Parameter(required = true, name = "param_msg")
-                      @Schema(name = "message", defaultValue = "default message by schema")
+data class DummyForm2(@field:Parameter(required = true, name = "param_msg")
+                      @field:Schema(name = "message", defaultValue = "default message by schema")
                       val msg: String = "default message",
-                      @Parameter(required = true, name = "param_sender_uid")
-                      @Schema(name = "sender_uid", minimum = "0", defaultValue = "0")
+                      @field:Parameter(required = true, name = "param_sender_uid")
+                      @field:Schema(name = "sender_uid", minimum = "0", defaultValue = "0")
                       val senderUid: Long = 0,
                       @Hidden val createdAt: LocalDateTime = LocalDateTime.now()) {
     override fun toString(): String = Jsons.toString(this)

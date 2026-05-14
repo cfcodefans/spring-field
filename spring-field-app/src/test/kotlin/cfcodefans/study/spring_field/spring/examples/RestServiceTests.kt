@@ -1,14 +1,18 @@
 package cfcodefans.study.spring_field.spring.examples.rest_service
 
-import cfcodefans.study.spring_field.spring.boot.SpringBootApplicationWithoutSecurity
+import cfcodefans.study.spring_field.spring.boot.AutoCfgWithoutDataJpa
+import cfcodefans.study.spring_field.spring.boot.AutoCfgWithoutSecurity
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.SpringApplication
+import org.springframework.boot.SpringBootConfiguration
+import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc
+import org.springframework.context.annotation.ComponentScan
 import org.springframework.test.context.junit.jupiter.SpringExtension
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
@@ -45,9 +49,11 @@ open class GreetingCtl {
     }
 }
 
-@SpringBootApplicationWithoutSecurity(
-    scanBasePackages = ["cfcodefans.study.spring_field.spring.examples.rest_service"],
-)
+@ComponentScan("cfcodefans.study.spring_field.spring.examples.rest_service")
+@AutoCfgWithoutSecurity
+@AutoCfgWithoutDataJpa
+@SpringBootConfiguration
+@SpringBootApplication
 open class GSRestServiceApp {
     companion object {
         val log: Logger = LoggerFactory.getLogger(GSRestServiceApp::class.java)
@@ -58,16 +64,16 @@ fun main(args: Array<String>) {
     SpringApplication.run(GSRestServiceApp::class.java, *args)
 }
 
-
 /**
  * refers to https://spring.io/guides/gs/rest-service/
  * https://github.com/spring-guides/gs-rest-service/blob/main/complete/src/test/java/com/example/restservice/GreetingControllerTests.java
  */
 @ExtendWith(SpringExtension::class)
 @SpringBootTest(
-    classes = [GSRestServiceApp::class],
-    webEnvironment = SpringBootTest.WebEnvironment.MOCK,
-    properties = [
+        classes = [GSRestServiceApp::class],
+        webEnvironment = SpringBootTest.WebEnvironment.MOCK,
+        useMainMethod = SpringBootTest.UseMainMethod.WHEN_AVAILABLE,
+        properties = [
         RestServiceTestSpringProperties.ACTIVE_PROFILE_LAB,
         RestServiceTestSpringProperties.SERVLET_CONTEXT_PATH_ROOT,
     ],

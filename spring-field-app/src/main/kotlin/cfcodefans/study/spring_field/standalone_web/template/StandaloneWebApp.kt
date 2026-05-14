@@ -61,6 +61,7 @@ open class OpenAPIDocConfig {
     open fun createRestApi(): GroupedOpenApi = GroupedOpenApi
         .builder()
         .group("public-api")
+        .packagesToScan("cfcodefans.study.spring_field.standalone_web.template")
         .pathsToExclude("/auth")
         .build()
 }
@@ -68,6 +69,7 @@ open class OpenAPIDocConfig {
 fun main(args: Array<String>) {
     SpringApplication.run(StandaloneWebApp::class.java,
                           *args,
+                          "--spring.profiles.active=standalone-web",
                           "--server.port=$PORT",
                           "--server.compression.enabled=true",
                           "--server.compression.mime-types=text/html,text/xml,text/plain,text/css,text/javascript,application/javascript,application/json,application/xml,application/x-javascript",

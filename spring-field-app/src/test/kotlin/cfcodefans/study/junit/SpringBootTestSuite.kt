@@ -1,5 +1,6 @@
 package cfcodefans.study.junit
 
+import cfcodefans.study.spring_field.spring.boot.AutoCfgMinimalTestContext
 import jakarta.annotation.PostConstruct
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
@@ -9,22 +10,11 @@ import org.junit.platform.suite.api.Suite
 import org.junit.platform.suite.api.SuiteDisplayName
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import org.springdoc.core.configuration.SpringDocConfiguration
-import org.springdoc.webmvc.core.configuration.SpringDocWebMvcConfiguration
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.boot.autoconfigure.SpringBootApplication
-import org.springframework.boot.autoconfigure.jmx.JmxAutoConfiguration
-import org.springframework.boot.hibernate.autoconfigure.HibernateJpaAutoConfiguration
-import org.springframework.boot.jdbc.autoconfigure.DataSourceAutoConfiguration
-import org.springframework.boot.jdbc.autoconfigure.DataSourceTransactionManagerAutoConfiguration
-import org.springframework.boot.security.autoconfigure.SecurityAutoConfiguration
-import org.springframework.boot.security.autoconfigure.UserDetailsServiceAutoConfiguration
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.context.SpringBootTest.UseMainMethod
-import org.springframework.boot.webmvc.autoconfigure.DispatcherServletAutoConfiguration
-import org.springframework.boot.webmvc.autoconfigure.WebMvcAutoConfiguration
-import org.springframework.boot.webmvc.autoconfigure.error.ErrorMvcAutoConfiguration
 import org.springframework.context.annotation.AnnotationConfigApplicationContext
 import org.springframework.context.annotation.EnableAspectJAutoProxy
 import org.springframework.stereotype.Service
@@ -53,27 +43,9 @@ open class DummyService : (Any) -> String {
     override fun invoke(p1: Any): String = p1.toString()
 }
 
-@SpringBootApplication(
-        scanBasePackages = ["cfcodefans.study.junit"],
-        exclude = [
-//            ServletWebServerFactoryAutoConfiguration::class,
-            DispatcherServletAutoConfiguration::class,
-            WebMvcAutoConfiguration::class,
-            ErrorMvcAutoConfiguration::class,
-            // Security and SpringDoc are often web-dependent
-            SecurityAutoConfiguration::class,
-            UserDetailsServiceAutoConfiguration::class,
-            SpringDocConfiguration::class,
-            SpringDocWebMvcConfiguration::class,
-
-            DataSourceAutoConfiguration::class,
-            HibernateJpaAutoConfiguration::class,
-            DataSourceTransactionManagerAutoConfiguration::class,
-
-            JmxAutoConfiguration::class,
-//            GsonAutoConfiguration::class
-        ])
+@SpringBootApplication(scanBasePackages = ["cfcodefans.study.junit"])
 @EnableAspectJAutoProxy(proxyTargetClass = false)
+@AutoCfgMinimalTestContext
 open class DummySpringBootApp {
     companion object {
         val log: Logger = LoggerFactory.getLogger(DummySpringBootApp::class.java)
@@ -114,6 +86,7 @@ open class DummyServiceTestsA : DummyServiceTestBase() {
         log.info(appCxt.toString())
 
         appCxt.beanDefinitionNames
+            .asSequence()
             .map { name -> appCxt.getBeanDefinition(name) }
             .filter { b -> b.beanClassName?.contains("cfcodefans") == true }
             .map { bd -> "${bd.factoryBeanName}\t${bd.beanClassName}" }
@@ -149,6 +122,7 @@ open class DummyServiceTestsB : DummyServiceTestBase() {
         log.info(appCxt.toString())
 
         appCxt.beanDefinitionNames
+            .asSequence()
             .map { name -> appCxt.getBeanDefinition(name) }
             .filter { b -> b.beanClassName?.contains("cfcodefans") == true }
             .map { bd -> "${bd.factoryBeanName}\t${bd.beanClassName}" }
