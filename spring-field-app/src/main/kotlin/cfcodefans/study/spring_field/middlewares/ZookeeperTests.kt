@@ -1,6 +1,6 @@
 package cfcodefans.study.spring_field.middlewares
 
-import cfcodefans.study.spring_field.commons.Jsons
+import cfcodefans.study.spring_field.commons.Jsons3
 import org.apache.zookeeper.*
 import org.apache.zookeeper.Watcher.Event.EventType
 import org.junit.jupiter.api.AfterAll
@@ -49,7 +49,7 @@ open class ZookeeperTests {
 
     @Test
     fun testInfo() {
-        log.info("Stat: ${Jsons.toString(zk.exists(TEST_PATH_ROOT, null))}")
+        log.info("Stat: ${Jsons3.toString(zk.exists(TEST_PATH_ROOT, null))}")
         log.info("root: ${zk.getChildren(TEST_PATH_ROOT, LOG_WATCHER).joinToString(separator = "\n", prefix = "\n")}")
     }
 

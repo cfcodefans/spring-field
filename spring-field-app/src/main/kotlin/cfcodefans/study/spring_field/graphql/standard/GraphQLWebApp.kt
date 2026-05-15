@@ -7,22 +7,27 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.boot.SpringApplication
 import org.springframework.boot.autoconfigure.SpringBootApplication
-import org.springframework.context.annotation.Bean
-import org.springframework.context.annotation.Configuration
+import org.springframework.boot.graphql.autoconfigure.security.GraphQlWebMvcSecurityAutoConfiguration
+import org.springframework.boot.security.autoconfigure.SecurityAutoConfiguration
+import org.springframework.boot.security.autoconfigure.UserDetailsServiceAutoConfiguration
+import org.springframework.boot.security.autoconfigure.web.servlet.ServletWebSecurityAutoConfiguration
 import org.springframework.data.jpa.repository.config.EnableJpaAuditing
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
-import org.springframework.security.config.annotation.web.builders.HttpSecurity
-import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity
-import org.springframework.security.config.annotation.web.configurers.AuthorizeHttpRequestsConfigurer
-import org.springframework.security.config.annotation.web.configurers.CsrfConfigurer
-import org.springframework.security.web.SecurityFilterChain
 import org.springframework.stereotype.Component
 import org.springframework.web.bind.annotation.ControllerAdvice
 import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.context.request.WebRequest
 
-@SpringBootApplication(scanBasePackages = [GraphQLWebApp.BASE_PACKAGE])
+@SpringBootApplication(
+        scanBasePackages = [GraphQLWebApp.BASE_PACKAGE],
+        exclude = [
+            SecurityAutoConfiguration::class,
+            UserDetailsServiceAutoConfiguration::class,
+            ServletWebSecurityAutoConfiguration::class,
+            GraphQlWebMvcSecurityAutoConfiguration::class,
+        ],
+)
 @EnableJpaAuditing
 open class GraphQLWebApp {
     companion object {
@@ -33,40 +38,16 @@ open class GraphQLWebApp {
 
     @PostConstruct
     open fun logStartupHints() {
-        log.info(
-            "GraphQLWebApp — try GraphiQL at http://localhost:${PORT}/graphiql and POST /graphql (profile graphql-web).",
-        )
+        log.info("GraphQLWebApp — try GraphiQL at http://localhost:${PORT}/graphiql/ (trailing slash) and POST /graphql (profile graphql-web).")
     }
 }
 
 fun main(args: Array<String>) {
-    SpringApplication.run(
-        GraphQLWebApp::class.java,
-        *args,
-        "--spring.profiles.active=graphql-web",
-        "--server.port=${GraphQLWebApp.PORT}",
-        "--server.compression.enabled=true",
-    )
-}
-
-@Configuration
-@EnableWebSecurity
-open class GraphQLWebSecurity {
-    companion object {
-        val log: Logger = LoggerFactory.getLogger(GraphQLWebSecurity::class.java)
-    }
-
-    @Bean
-    open fun graphqlSecurityFilterChain(http: HttpSecurity): SecurityFilterChain =
-        http
-            .csrf { csrfConfigurer: CsrfConfigurer<HttpSecurity> -> csrfConfigurer.disable() }
-            .authorizeHttpRequests { registry: AuthorizeHttpRequestsConfigurer<HttpSecurity>.AuthorizationManagerRequestMatcherRegistry ->
-                registry.anyRequest().permitAll()
-            }
-            .build()
-            .also { chain: SecurityFilterChain ->
-                log.info("GraphQLWebApp security: all requests permitted (study app). $chain")
-            }
+    SpringApplication.run(GraphQLWebApp::class.java,
+                          *args,
+                          "--spring.profiles.active=graphql-web",
+                          "--server.port=${GraphQLWebApp.PORT}",
+                          "--server.compression.enabled=true")
 }
 
 @ControllerAdvice
@@ -75,11 +56,9 @@ open class GraphQLWebApiExceptionHandler {
         private val log: Logger = LoggerFactory.getLogger(GraphQLWebApiExceptionHandler::class.java)
     }
 
-    @ExceptionHandler(
-        IllegalArgumentException::class,
-        NoSuchElementException::class,
-        Exception::class,
-    )
+    @ExceptionHandler(IllegalArgumentException::class,
+                      NoSuchElementException::class,
+                      Exception::class)
     fun handle(ex: Exception, req: WebRequest): ResponseEntity<String> {
         log.error("Request {} failed: {}", req.getDescription(false), ex.message, ex)
         val status: HttpStatus = when (ex) {
@@ -94,4 +73,4 @@ open class GraphQLWebApiExceptionHandler {
 
 @Component
 @WebFilter
-open class TestLogFilter : TrafficLogFilter() {}
+open class TestLogFilter : TrafficLogFilter()

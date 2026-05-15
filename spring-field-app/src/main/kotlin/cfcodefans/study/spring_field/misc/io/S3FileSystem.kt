@@ -1,6 +1,6 @@
 package cfcodefans.study.spring_field.misc.io
 
-import cfcodefans.study.spring_field.commons.Jsons
+import cfcodefans.study.spring_field.commons.Jsons3
 import cfcodefans.study.spring_field.misc.io.S3Constants.S3_SCHEME
 import com.amazonaws.services.s3.Headers.ETAG
 import com.amazonaws.services.s3.model.AmazonS3Exception
@@ -85,7 +85,7 @@ open class S3FileName(val endpoint: String,
         return path.toString()
     }
 
-    override fun toString(): String = Jsons.toString(this)
+    override fun toString(): String = Jsons3.toString(this)
 }
 
 open class S3FileNameParser : UrlFileNameParser()

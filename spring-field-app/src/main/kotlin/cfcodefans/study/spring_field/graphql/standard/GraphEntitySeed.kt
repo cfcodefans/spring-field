@@ -1,6 +1,6 @@
 package cfcodefans.study.spring_field.graphql.standard
 
-import com.fasterxml.jackson.databind.ObjectMapper
+import cfcodefans.study.spring_field.commons.Jsons2
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.boot.ApplicationArguments
@@ -15,27 +15,27 @@ open class GraphEntitySeed {
     }
 
     @Bean
-    open fun loadSampleGraphEntities(repo: GraphEntityRepo, om: ObjectMapper): ApplicationRunner =
+    open fun loadSampleGraphEntities(repo: GraphEntityRepo): ApplicationRunner =
         ApplicationRunner { applicationArguments: ApplicationArguments ->
             if (repo.count() > 0) return@ApplicationRunner
             val root: GraphEntity = GraphEntity(entityType = "person",
                                                 name = "Ada",
                                                 parentId = null,
-                                                data = om.readTree("""{"role":"architect"}"""),
-                                                note = om.readTree("""{"source":"seed"}"""),
+                                                data = Jsons2.read("""{"role":"architect"}"""),
+                                                note = Jsons2.read("""{"source":"seed"}"""),
                                                 tags = mutableListOf("demo", "root"))
             val savedRoot: GraphEntity = repo.save(root)
             repo.save(GraphEntity(entityType = "document",
                                   name = "Design notes",
                                   parentId = savedRoot.id,
-                                  data = om.readTree("""{"pages":3}"""),
+                                  data = Jsons2.read("""{"pages":3}"""),
                                   note = null,
                                   tags = mutableListOf("nested")))
             repo.save(GraphEntity(entityType = "node",
                                   name = "Orphan node",
                                   parentId = null,
                                   data = null,
-                                  note = om.readTree("""{}"""),
+                                  note = Jsons2.read("""{}"""),
                                   tags = mutableListOf()))
             log.info("Seeded ${repo.count()} graph_entity rows (${applicationArguments.sourceArgs.size} startup args)")
         }

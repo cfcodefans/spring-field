@@ -47,15 +47,15 @@ open class TrafficLogFilter : OncePerRequestFilter() {
                             request:        ${reqWrapper.remoteAddr}
                             url:            ${reqWrapper.requestURL}
                             method:         ${reqWrapper.method}
-                            header:         ${reqWrapper.headerNames.toList().associateWith { hn -> reqWrapper.getHeader(hn) }.let { Jsons.toJson(it) }}
+                            header:         ${reqWrapper.headerNames.toList().associateWith { hn -> reqWrapper.getHeader(hn) }.let { Jsons3.toJson(it) }}
                             queryString:    ${reqWrapper.queryString}
-                            params:         ${Jsons.fakeJson(reqWrapper.parameterMap)}
+                            params:         ${Jsons3.fakeJson(reqWrapper.parameterMap)}
                             content:    $reqBody
                             
                             took        ${System.currentTimeMillis() - start} ms to get
                             
                             response:
-                            header:         ${respWrapper.headerNames.toList().associateWith { hn -> respWrapper.getHeader(hn) }.let { Jsons.toJson(it) }}
+                            header:         ${respWrapper.headerNames.toList().associateWith { hn -> respWrapper.getHeader(hn) }.let { Jsons3.toJson(it) }}
                             code:           ${respWrapper.status}
                             content:        ${
             if (respContentType == null || isPrintable(respContentType)) respContent else "can not print"

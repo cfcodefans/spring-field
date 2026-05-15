@@ -1,6 +1,6 @@
 package cfcodefans.study.spring_field.configs
 
-import cfcodefans.study.spring_field.commons.Jsons
+import cfcodefans.study.spring_field.commons.Jsons3
 import jakarta.annotation.PostConstruct
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
@@ -60,7 +60,7 @@ open class Configs {
         log.info("${Configs.javaClass}.init()")
     }
 
-    override fun toString(): String = Jsons.toString(mapOf(
+    override fun toString(): String = Jsons3.toString(mapOf(
             "appName" to appName,
             "fileExts" to fileExts,
             "repos" to siteToRepoCfgs

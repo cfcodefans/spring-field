@@ -1,6 +1,6 @@
 package cfcodefans.study.spring_field.standalone_web.template
 
-import cfcodefans.study.spring_field.commons.Jsons
+import cfcodefans.study.spring_field.commons.Jsons3
 import io.swagger.v3.oas.annotations.Hidden
 import io.swagger.v3.oas.annotations.OpenAPIDefinition
 import io.swagger.v3.oas.annotations.Operation
@@ -21,7 +21,7 @@ import io.swagger.v3.oas.annotations.parameters.RequestBody as ReqBody
 data class DummyForm(@field:Parameter(required = true, name = "username") val username: String,
                      @field:Parameter(required = true, name = "password") val password: String,
                      @Hidden val createdAt: LocalDateTime = LocalDateTime.now()) {
-    override fun toString(): String = Jsons.toString(this)
+    override fun toString(): String = Jsons3.toString(this)
 }
 
 @Schema(name = "DummyForm2")
@@ -32,7 +32,7 @@ data class DummyForm2(@field:Parameter(required = true, name = "param_msg")
                       @field:Schema(name = "sender_uid", minimum = "0", defaultValue = "0")
                       val senderUid: Long = 0,
                       @Hidden val createdAt: LocalDateTime = LocalDateTime.now()) {
-    override fun toString(): String = Jsons.toString(this)
+    override fun toString(): String = Jsons3.toString(this)
 }
 
 @OpenAPIDefinition()
@@ -87,10 +87,10 @@ open class PublicResCtrl {
     open fun echoForm3(
             @RequestHeader("X-Custom-Header") customHeaderValue: String, // Spring annotation to read the header
             @RequestHeader("X-Optional-Header", required = false) optionalHeaderValue: Int?,
-            req: HttpServletRequest): String = Jsons.toString(mapOf("form" to DummyForm2(msg = req.parameterMap["message"]?.firstOrNull() ?: "default message by request",
-                                                                                         senderUid = req.parameterMap["sender_uid"]?.firstOrNull()?.toLong() ?: -1),
-                                                                    "X-Custom-Header" to customHeaderValue,
-                                                                    "X-Optional-Header" to optionalHeaderValue))
+            req: HttpServletRequest): String = Jsons3.toString(mapOf("form" to DummyForm2(msg = req.parameterMap["message"]?.firstOrNull() ?: "default message by request",
+                                                                                          senderUid = req.parameterMap["sender_uid"]?.firstOrNull()?.toLong() ?: -1),
+                                                                     "X-Custom-Header" to customHeaderValue,
+                                                                     "X-Optional-Header" to optionalHeaderValue))
 
 
 }

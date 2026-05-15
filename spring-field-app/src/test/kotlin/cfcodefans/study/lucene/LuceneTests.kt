@@ -1,6 +1,6 @@
 package cfcodefans.study.lucene
 
-import cfcodefans.study.spring_field.commons.Jsons
+import cfcodefans.study.spring_field.commons.Jsons3
 import org.apache.lucene.analysis.standard.StandardAnalyzer
 import org.apache.lucene.document.*
 import org.apache.lucene.index.DirectoryReader
@@ -63,7 +63,7 @@ open class LuceneTests {
                              var loc: LatLonPos = LatLonPos(0.0, 0.0),
                              var content: String = "",
                              var attrs: MutableMap<String, Any?> = mutableMapOf<String, Any?>()) {
-            override fun toString(): String = Jsons.toString(this)
+            override fun toString(): String = Jsons3.toString(this)
 
             /**
              * Converts this DataEntry into a Lucene Document using best practices.
@@ -103,7 +103,7 @@ open class LuceneTests {
                 attrs.mapNotNull { (key: String, value: Any?) -> attrToField(key, value) }
                     .forEach { field: Field -> doc.add(field) }
                 if (attrs.isNotEmpty()) {
-                    doc.add(StoredField("attrs_json", Jsons.toStr(this.attrs)))
+                    doc.add(StoredField("attrs_json", Jsons3.toStr(this.attrs)))
                 }
             }
 
@@ -126,7 +126,7 @@ open class LuceneTests {
                                               content = doc.getValues("content").first(),
                                               attrs = doc.getField("attrs_json")
                                                   ?.stringValue()
-                                                  ?.let { Jsons.readToMap(it) }
+                                                  ?.let { Jsons3.readToMap(it) }
                                                   ?.toMutableMap()
                                                   ?: mutableMapOf())
         }
@@ -153,8 +153,8 @@ open class LuceneTests {
             .getResourceAsStream("/cfcodefans/study/lucene/mock-data-1.json")
             ?: throw IllegalStateException("Cannot find mock-data-1.json in classpath."))
             .use {
-                Jsons.read(it.readAllBytes().toString(Charsets.UTF_8),
-                           Array<DataEntry>::class.java)
+                Jsons3.read(it.readAllBytes().toString(Charsets.UTF_8),
+                            Array<DataEntry>::class.java)
             }.toList()
         val docs: List<Document> = controlDataEntries.map { it.toLuceneDoc() }
 
@@ -265,8 +265,8 @@ open class LuceneTests {
             .getResourceAsStream("/cfcodefans/study/lucene/mock-data-1.json")
             ?: throw IllegalStateException("Cannot find mock-data-1.json in classpath."))
             .use {
-                Jsons.read(it.readAllBytes().toString(Charsets.UTF_8),
-                           Array<DataEntry>::class.java)
+                Jsons3.read(it.readAllBytes().toString(Charsets.UTF_8),
+                            Array<DataEntry>::class.java)
             }.let { entries ->
                 Assertions.assertTrue(entries.isNotEmpty(), "Should load entries from mock JSON file.")
             }

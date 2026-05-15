@@ -17,6 +17,7 @@
         <kotlin.compiler.jvmTarget>21</kotlin.compiler.jvmTarget>
         <kotlin.version>2.3.21</kotlin.version>
         <spring-boot.version>4.0.6</spring-boot.version>
+        <jackson3.version>3.1.2</jackson3.version>
         <springfox.version>2.9.2</springfox.version>
         <springdoc-openapi.version>3.0.3</springdoc-openapi.version>
     </properties>
@@ -290,12 +291,6 @@
         </dependency>
 
         <dependency>
-            <groupId>com.fasterxml.jackson.module</groupId>
-            <artifactId>jackson-module-kotlin</artifactId>
-            <version>2.21.2</version>
-        </dependency>
-
-        <dependency>
             <groupId>org.hsqldb</groupId>
             <artifactId>hsqldb</artifactId>
             <version>2.7.4</version>
@@ -345,6 +340,12 @@
         </dependency>
 
         <dependency>
+            <groupId>tools.jackson.module</groupId>
+            <artifactId>jackson-module-kotlin</artifactId>
+            <version>${jackson3.version}</version>
+        </dependency>
+
+        <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
             <version>${spring-boot.version}</version>
@@ -369,6 +370,17 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-graphql</artifactId>
+            <version>${spring-boot.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.slf4j</groupId>
+                    <artifactId>slf4j-api</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-graphql-test</artifactId>
             <version>${spring-boot.version}</version>
             <exclusions>
                 <exclusion>

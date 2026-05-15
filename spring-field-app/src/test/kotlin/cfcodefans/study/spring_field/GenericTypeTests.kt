@@ -1,12 +1,12 @@
 package cfcodefans.study.spring_field
 
-import cfcodefans.study.spring_field.commons.Jsons
+import cfcodefans.study.spring_field.commons.Jsons3
 import java.util.*
 
 abstract class ObjHolder<T>(var obj: T,
                             var name: String,
                             var attr: MutableMap<String, Any> = HashMap()) {
-    override fun toString(): String = Jsons.toString(mapOf(
+    override fun toString(): String = Jsons3.toString(mapOf(
             "clz" to this.javaClass.simpleName,
             "obj" to obj,
             "name" to name,

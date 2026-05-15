@@ -6,7 +6,7 @@ import org.springframework.graphql.data.method.annotation.QueryMapping
 import org.springframework.stereotype.Controller
 
 @Controller
-open class GraphEntityGraphqlController(private val service: GraphEntityService) {
+open class GraphqlCtrl(private val service: GraphEntityService) {
     @QueryMapping
     open fun entities(): List<GraphEntityGql> = service.findAll()
 

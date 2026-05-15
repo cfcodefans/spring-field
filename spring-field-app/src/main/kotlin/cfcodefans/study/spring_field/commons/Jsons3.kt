@@ -1,52 +1,47 @@
 package cfcodefans.study.spring_field.commons
 
-import com.fasterxml.jackson.core.JsonGenerator
-import com.fasterxml.jackson.core.JsonParser
-import com.fasterxml.jackson.core.type.TypeReference
-import com.fasterxml.jackson.databind.DeserializationFeature
-import com.fasterxml.jackson.databind.JsonNode
-import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.databind.SerializationFeature
-import com.fasterxml.jackson.databind.node.*
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import cfcodefans.study.spring_field.commons.Jsons3.fakeLiteral
 import jakarta.persistence.AttributeConverter
 import jakarta.persistence.Converter
 import org.apache.commons.lang3.time.DateUtils
+import tools.jackson.core.StreamReadFeature
+import tools.jackson.core.json.JsonReadFeature
+import tools.jackson.core.json.JsonWriteFeature
+import tools.jackson.core.type.TypeReference
+import tools.jackson.databind.DeserializationFeature
+import tools.jackson.databind.JsonNode
+import tools.jackson.databind.ObjectMapper
+import tools.jackson.databind.cfg.DateTimeFeature
+import tools.jackson.databind.json.JsonMapper
+import tools.jackson.databind.node.*
+import tools.jackson.module.kotlin.KotlinModule
 import java.io.InputStream
+import java.text.DateFormat
 import java.text.SimpleDateFormat
 import java.util.*
 
-object Jsons {
+object Jsons3 {
 
     const val DEFAULT_DATE_TIME_FORMAT: String = "yyyy-MM-dd HH:mm:ss"
 
-    // https://www.baeldung.com/jackson-kotlin
-    val MAPPER: ObjectMapper = jacksonObjectMapper().apply {
-        configure(JsonParser.Feature.AUTO_CLOSE_SOURCE, true)
-        configure(JsonParser.Feature.ALLOW_SINGLE_QUOTES, true)
-        configure(JsonParser.Feature.ALLOW_UNQUOTED_CONTROL_CHARS, true)
-        configure(JsonParser.Feature.ALLOW_UNQUOTED_FIELD_NAMES, true)
-        configure(JsonParser.Feature.IGNORE_UNDEFINED, true)
-        configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
-        // Ignore Null Fields Globally
-        //MAPPER.setSerializationInclusion(JsonInclude.Include.NON_NULL)
-        // SerializationFeature.INDENT_OUTPUT = Globally Pretty Printer
-        // Please don't set it Globally, ActivityStreams's content have to use the DefaultPrettyPrinter
-        // {
-        //    "name" : "mkyong",
-        //    "age" : 38,
-        //    "skills" : [ "java", "python", "node", "kotlin" ]
-        // }
-        //MAPPER.configure(SerializationFeature.INDENT_OUTPUT, true)
-        configure(JsonGenerator.Feature.QUOTE_FIELD_NAMES, true)
-        configure(JsonGenerator.Feature.ESCAPE_NON_ASCII, false)
+    /** Used where we format dates outside the mapper (e.g. [fakeLiteral]). */
+    private val displayDateFormat: DateFormat = SimpleDateFormat(DEFAULT_DATE_TIME_FORMAT)
 
-        configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
-        configure(SerializationFeature.WRITE_DATES_WITH_ZONE_ID, true)
-        dateFormat = SimpleDateFormat(DEFAULT_DATE_TIME_FORMAT)
-        registerModule(JavaTimeModule())
-    }
+    // https://www.baeldung.com/jackson-kotlin — Jackson 3: tools.jackson + JsonMapper builder
+    val MAPPER: ObjectMapper = JsonMapper.builder()
+        .addModule(KotlinModule.Builder().build())
+        .enable(StreamReadFeature.AUTO_CLOSE_SOURCE)
+        .enable(StreamReadFeature.IGNORE_UNDEFINED)
+        .enable(JsonReadFeature.ALLOW_SINGLE_QUOTES,
+                JsonReadFeature.ALLOW_UNESCAPED_CONTROL_CHARS,
+                JsonReadFeature.ALLOW_UNQUOTED_PROPERTY_NAMES)
+        .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+        .configure(JsonWriteFeature.QUOTE_PROPERTY_NAMES, true)
+        .configure(JsonWriteFeature.ESCAPE_NON_ASCII, false)
+        .configure(DateTimeFeature.WRITE_DATES_AS_TIMESTAMPS, false)
+        .configure(DateTimeFeature.WRITE_DATES_WITH_ZONE_ID, true)
+        .defaultDateFormat(SimpleDateFormat(DEFAULT_DATE_TIME_FORMAT))
+        .build()
 
     fun read(input: InputStream?): JsonNode {
         requireNotNull(input) { "reading json however the input stream is empty" }
@@ -78,7 +73,7 @@ object Jsons {
     fun <T> read(jn: JsonNode?, cls: Class<T>): T {
         requireNotNull(jn) { "reading json however the json node is null" }
         return try {
-            MAPPER.readValue(jn.traverse(), cls)
+            MAPPER.readValue(MAPPER.treeAsTokens(jn), cls)
         } catch (e: Exception) {
             throw RuntimeException("reading json node to ${cls.name}", e)
         }
@@ -121,8 +116,8 @@ object Jsons {
         else MAPPER.convertValue(any,
                                  when (any) {
                                      is Boolean -> BooleanNode::class.java
-                                     is Char -> TextNode::class.java
-                                     is String -> TextNode::class.java
+                                     is Char -> StringNode::class.java
+                                     is String -> StringNode::class.java
                                      is Number -> DecimalNode::class.java
                                      is Map<*, *> -> POJONode::class.java
                                      else -> ObjectNode::class.java
@@ -131,8 +126,10 @@ object Jsons {
         throw RuntimeException("serialize object to json\n\t${any}", e)
     }
 
-    fun jsonOrNull(raw: String?): JsonNode? = if (raw.isNullOrBlank()) null
-    else runCatching { MAPPER.readValue(raw, JsonNode::class.java) }.getOrNull()
+    fun jsonOrNull(raw: String?): JsonNode? = if (raw.isNullOrBlank())
+        null
+    else
+        runCatching { MAPPER.readValue(raw, JsonNode::class.java) }.getOrNull()
 
     fun toJson(map: Map<String, Any?>): JsonNode = try {
         MAPPER.createObjectNode()
@@ -153,13 +150,16 @@ object Jsons {
     else runCatching { MAPPER.readValue(raw, cls) }.getOrNull()
 
     fun <T> readOrNull(jn: JsonNode?, cls: Class<T>): T? = jn
-        ?.let { runCatching { MAPPER.readValue(it.traverse(), cls) }.getOrNull() }
+        ?.let { runCatching { MAPPER.readValue(MAPPER.treeAsTokens(it), cls) }.getOrNull() }
 
     const val JS_ISO_DATETIME_FORMAT: String = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"
 
     fun <T : JsonNode> ObjectNode.getOrDefault(key: String, default: T?): T? = this.get(key)
         ?.let { it as T }
-        ?: default.also { this.set<T?>(key, it) }
+        ?: default.also { v ->
+            if (v == null) putNull(key)
+            else set(key, v)
+        }
 
     /**
      * intend to resolve some escaped chars, doesn't work well
@@ -173,7 +173,7 @@ object Jsons {
         is Number -> value.toString()
         is Array<*> -> value.joinToString(", ") { fakeLiteral(it) }
         is Collection<*> -> value.joinToString(", ") { fakeLiteral(it) }
-        is Date -> MAPPER.dateFormat.format(value)
+        is Date -> displayDateFormat.format(value)
         is Any -> "\"$value\""
         else -> "null"
     }
@@ -191,5 +191,5 @@ open class ObjectNodeConverter : AttributeConverter<ObjectNode?, String?> {
 
     override fun convertToEntityAttribute(dbData: String?): ObjectNode? = dbData
         ?.ifBlank { null }
-        ?.let { Jsons.read(dbData, ObjectNode::class.java) }
+        ?.let { Jsons3.read(dbData, ObjectNode::class.java) }
 }

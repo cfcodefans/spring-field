@@ -1,7 +1,8 @@
 package cfcodefans.study.spring_field.graphql.spqr
 
+import cfcodefans.study.spring_field.commons.Jsons2
 import com.fasterxml.jackson.databind.JsonNode
-import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.databind.node.ObjectNode
 import io.leangen.graphql.annotations.GraphQLArgument
 import io.leangen.graphql.annotations.GraphQLIgnore
 import io.leangen.graphql.annotations.GraphQLMutation
@@ -13,10 +14,7 @@ import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
 
 @Service
-open class GraphEntityService(
-    private val repo: GraphEntityRepo,
-    private val objectMapper: ObjectMapper,
-) {
+open class GraphEntityService(private val repo: GraphEntityRepo) {
     private val isoFmt: DateTimeFormatter = DateTimeFormatter.ISO_INSTANT
 
     @GraphQLIgnore
@@ -43,12 +41,12 @@ open class GraphEntityService(
     @Transactional
     open fun create(input: CreateGraphEntityInput): GraphEntityGql {
         val e: GraphEntity = GraphEntity(
-            entityType = input.entityType,
-            name = input.name,
-            parentId = input.parentId?.toLongId(),
-            data = parseJson(input.data),
-            note = parseJson(input.note),
-            tags = (input.tags ?: emptyList<String>()).toMutableList(),
+                entityType = input.entityType,
+                name = input.name,
+                parentId = input.parentId?.toLongId(),
+                data = parseJson(input.data),
+                note = parseJson(input.note),
+                tags = (input.tags ?: emptyList<String>()).toMutableList(),
         )
         return toGql(repo.save(e))
     }
@@ -102,20 +100,20 @@ open class GraphEntityService(
     open fun deleteEntity(@GraphQLArgument(name = "id") id: String): Boolean =
         delete(id.toLongIdRequired())
 
-    private fun parseJson(raw: String?): JsonNode? =
+    private fun parseJson(raw: String?): ObjectNode? =
         raw?.trim()?.takeIf { text: String -> text.isNotEmpty() }
-            ?.let { text: String -> objectMapper.readTree(text) }
+            ?.let { text: String -> Jsons2.read(text, ObjectNode::class.java) }
 
     private fun toGql(e: GraphEntity): GraphEntityGql = GraphEntityGql(
-        id = e.id,
-        entityType = e.entityType,
-        name = e.name,
-        parentId = e.parentId,
-        data = e.data?.let { node: JsonNode -> objectMapper.writeValueAsString(node) },
-        note = e.note?.let { node: JsonNode -> objectMapper.writeValueAsString(node) },
-        tags = e.tags.toList(),
-        createdAt = isoFmt.format(e.createdAt.atOffset(ZoneOffset.UTC)),
-        updatedAt = isoFmt.format(e.updatedAt.atOffset(ZoneOffset.UTC)),
+            id = e.id,
+            entityType = e.entityType,
+            name = e.name,
+            parentId = e.parentId,
+            data = e.data?.let { node: JsonNode -> Jsons2.toStringWithoutPrettyPrinter(node) },
+            note = e.note?.let { node: JsonNode -> Jsons2.toStringWithoutPrettyPrinter(node) },
+            tags = e.tags.toList(),
+            createdAt = isoFmt.format(e.createdAt.atOffset(ZoneOffset.UTC)),
+            updatedAt = isoFmt.format(e.updatedAt.atOffset(ZoneOffset.UTC)),
     )
 
     private fun String.toLongIdRequired(): Long =
@@ -126,32 +124,32 @@ open class GraphEntityService(
 }
 
 data class GraphEntityGql(
-    val id: Long,
-    val entityType: String,
-    val name: String,
-    val parentId: Long?,
-    val data: String?,
-    val note: String?,
-    val tags: List<String>,
-    val createdAt: String,
-    val updatedAt: String,
+        val id: Long,
+        val entityType: String,
+        val name: String,
+        val parentId: Long?,
+        val data: String?,
+        val note: String?,
+        val tags: List<String>,
+        val createdAt: String,
+        val updatedAt: String,
 )
 
 data class CreateGraphEntityInput(
-    val entityType: String,
-    val name: String,
-    val parentId: String? = null,
-    val data: String? = null,
-    val note: String? = null,
-    val tags: List<String>? = null,
+        val entityType: String,
+        val name: String,
+        val parentId: String? = null,
+        val data: String? = null,
+        val note: String? = null,
+        val tags: List<String>? = null,
 )
 
 data class UpdateGraphEntityInput(
-    val id: String,
-    val entityType: String? = null,
-    val name: String? = null,
-    val parentId: String? = null,
-    val data: String? = null,
-    val note: String? = null,
-    val tags: List<String>? = null,
+        val id: String,
+        val entityType: String? = null,
+        val name: String? = null,
+        val parentId: String? = null,
+        val data: String? = null,
+        val note: String? = null,
+        val tags: List<String>? = null,
 )

@@ -1,13 +1,14 @@
 package cfcodefans.study.spring_field.graphql.spqr
 
-import com.fasterxml.jackson.core.type.TypeReference
-import com.fasterxml.jackson.databind.JsonNode
-import com.fasterxml.jackson.databind.ObjectMapper
 import graphql.ExecutionInput
 import graphql.ExecutionResult
 import graphql.GraphQL
 import graphql.schema.GraphQLSchema
 import graphql.schema.idl.SchemaPrinter
+import cfcodefans.study.spring_field.commons.Jsons2
+import com.fasterxml.jackson.core.type.TypeReference
+import com.fasterxml.jackson.databind.JsonNode
+import com.fasterxml.jackson.databind.node.ObjectNode
 import org.springframework.http.HttpHeaders
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
@@ -18,9 +19,8 @@ import org.springframework.web.bind.annotation.*
  */
 @RestController
 @RequestMapping("/graphql")
-open class GraphSpqrHttpController(private val graphQL: GraphQL,
-                                   private val graphQLSchema: GraphQLSchema,
-                                   private val objectMapper: ObjectMapper) {
+open class GraphSpqrHttpCtrl(private val graphQL: GraphQL,
+                             private val graphQLSchema: GraphQLSchema) {
 
     @GetMapping("/schema", produces = [MediaType.TEXT_PLAIN_VALUE])
     open fun schema(): ResponseEntity<String> {
@@ -32,14 +32,15 @@ open class GraphSpqrHttpController(private val graphQL: GraphQL,
     }
 
     @PostMapping(consumes = [MediaType.APPLICATION_JSON_VALUE], produces = [MediaType.APPLICATION_JSON_VALUE])
-    open fun execute(@RequestBody body: JsonNode): ResponseEntity<Map<String, Any?>> {
-        val query: String = body.path("query").asText(null) ?: throw IllegalArgumentException("missing \"query\"")
-        val operationName: String? = body.path("operationName").asText(null)
-        val variablesNode: JsonNode = body.path("variables")
+    open fun execute(@RequestBody body: String): ResponseEntity<Map<String, Any?>> {
+        val root: ObjectNode = Jsons2.read(body, ObjectNode::class.java)
+        val query: String = root.path("query").asText(null) ?: throw IllegalArgumentException("missing \"query\"")
+        val operationName: String? = root.path("operationName").asText(null)?.takeIf { it.isNotEmpty() }
+        val variablesNode: JsonNode = root.path("variables")
         val variables: Map<String, Any> = if (!variablesNode.isObject) {
             emptyMap()
         } else {
-            objectMapper.convertValue(variablesNode, object : TypeReference<Map<String, Any>>() {})
+            Jsons2.MAPPER.convertValue(variablesNode, object : TypeReference<Map<String, Any>>() {})
         }
 
         val executionInput: ExecutionInput = ExecutionInput.newExecutionInput()

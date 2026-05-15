@@ -1,6 +1,6 @@
 package cfcodefans.study.spring_field.spring.examples.cache
 
-import cfcodefans.study.spring_field.commons.Jsons
+import cfcodefans.study.spring_field.commons.Jsons3
 import cfcodefans.study.spring_field.commons.MiscUtils
 import com.github.benmanes.caffeine.cache.Caffeine
 import com.github.benmanes.caffeine.cache.RemovalCause
@@ -92,7 +92,7 @@ open class CacheItemEvictedEvent(source: Any,
     override fun toString(): String = mapOf<String, Any?>("source" to super.source,
                                                           "key" to key,
                                                           "value" to value.toString(),
-                                                          "cause" to cause).let { Jsons.toString(it) }
+                                                          "cause" to cause).let { Jsons3.toString(it) }
 }
 
 // --- Adapter and Listener Components ---
@@ -144,10 +144,10 @@ open class SpringCacheTests {
         fun CacheManager.info(): String = mapOf("caches" to cacheNames.map { cn ->
             getCache(cn)
         }.map { c ->
-            mapOf("name" to c.name,
-                  "clzz" to c.javaClass.name,
-                  "native" to c.nativeCache.javaClass.name)
-        }).let { Jsons.toString(it) }
+            mapOf("name" to c?.name,
+                  "clzz" to c?.javaClass?.name,
+                  "native" to c?.nativeCache?.javaClass?.name)
+        }).let { Jsons3.toString(it) }
     }
 
     @Autowired

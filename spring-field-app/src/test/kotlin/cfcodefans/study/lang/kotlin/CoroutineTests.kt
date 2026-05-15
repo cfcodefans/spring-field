@@ -1,11 +1,11 @@
 package cfcodefans.study.lang.kotlin
 
-import cfcodefans.study.spring_field.commons.Jsons
-import com.fasterxml.jackson.databind.JsonNode
+import cfcodefans.study.spring_field.commons.Jsons3
 import kotlinx.coroutines.*
 import org.jetbrains.kotlin.utils.addToStdlib.measureTimeMillisWithResult
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import tools.jackson.databind.JsonNode
 import kotlin.concurrent.thread
 import kotlin.coroutines.CoroutineContext
 import kotlin.math.sqrt
@@ -25,19 +25,19 @@ open class CoroutineTests {
                                          "isCompleted" to this.isCompleted,
                                          "isCancelled" to this.isCancelled,
                                          "parent" to this.parent?.info())
-            .let { Jsons.toNode(it) }
+            .let { Jsons3.toNode(it) }
 
         fun CoroutineContext.info(): JsonNode = mapOf("clz" to this.javaClass.name,
                                                       "nativeStr" to toString(),
                                                       "isActive" to this.isActive,
                                                       "job" to this.job.info())
-            .let { Jsons.toNode(it) }
+            .let { Jsons3.toNode(it) }
 
         fun CoroutineScope.info(): JsonNode = mapOf("clz" to this.javaClass.name,
                                                     "nativeStr" to this.toString(),
                                                     "isActive" to this.isActive,
                                                     "context" to this.coroutineContext.info())
-            .let { Jsons.toNode(it) }
+            .let { Jsons3.toNode(it) }
     }
 
     @Test
