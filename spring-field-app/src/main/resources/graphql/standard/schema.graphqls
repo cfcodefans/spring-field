@@ -11,6 +11,21 @@ type GraphEntity {
   updatedAt: String!
 }
 
+"""Optional filters are combined with AND. Omit the whole input or leave fields unset to skip that constraint."""
+input GraphEntityFilterInput {
+  """Exact match on entity_type."""
+  entityType: String
+  """Match rows with this parent id."""
+  parentId: ID
+  """
+  When true, only rows with no parent (root entities).
+  Ignored when parentId is set (parentId wins).
+  """
+  rootOnly: Boolean
+  """Case-insensitive substring match on name."""
+  nameContains: String
+}
+
 input CreateGraphEntityInput {
   entityType: String!
   name: String!
@@ -31,11 +46,9 @@ input UpdateGraphEntityInput {
 }
 
 type Query {
-  entities: [GraphEntity!]!
+  """List entities; pass filter to narrow results instead of many separate query fields."""
+  entities(filter: GraphEntityFilterInput): [GraphEntity!]!
   entity(id: ID!): GraphEntity
-  entitiesByType(entityType: String!): [GraphEntity!]!
-  """When parentId is omitted, returns root entities (no parent)."""
-  entitiesByParent(parentId: ID): [GraphEntity!]!
 }
 
 type Mutation {

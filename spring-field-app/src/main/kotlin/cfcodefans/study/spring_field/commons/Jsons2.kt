@@ -10,6 +10,7 @@ import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.SerializationFeature
 import com.fasterxml.jackson.databind.json.JsonMapper
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.databind.node.BooleanNode
 import com.fasterxml.jackson.databind.node.DecimalNode
 import com.fasterxml.jackson.databind.node.JsonNodeFactory
@@ -28,8 +29,8 @@ import java.util.*
  * Jackson 2 ([com.fasterxml.jackson]) twin of [Jsons3] for stacks that still bind JSON via Jackson 2
  * (e.g. Hibernate `SqlTypes.JSON` with `com.fasterxml.jackson.databind.node.ObjectNode`).
  *
- * Note: This project does not declare `com.fasterxml.jackson.module:jackson-module-kotlin`; the mapper
- * therefore matches Jackson-2–only stacks (e.g. SPQR / Hibernate) without extra Kotlin databind hooks.
+ * Registers [JavaTimeModule] for `java.time` types (e.g. [java.time.Instant] on JPA entities).
+ * Does not use `jackson-module-kotlin` so the mapper stays aligned with Jackson-2–only stacks.
  */
 object Jsons2 {
 
@@ -51,6 +52,7 @@ object Jsons2 {
         .configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false)
         .configure(SerializationFeature.WRITE_DATES_WITH_ZONE_ID, true)
         .defaultDateFormat(SimpleDateFormat(DEFAULT_DATE_TIME_FORMAT))
+        .addModule(JavaTimeModule())
         .build()
 
     fun read(input: InputStream?): JsonNode {

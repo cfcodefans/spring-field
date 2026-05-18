@@ -8,19 +8,12 @@ import org.springframework.stereotype.Controller
 @Controller
 open class GraphqlCtrl(private val service: GraphEntityService) {
     @QueryMapping
-    open fun entities(): List<GraphEntityGql> = service.findAll()
+    open fun entities(@Argument(name = "filter") filter: GraphEntityFilterInput?): List<GraphEntityGql> =
+        service.findWithFilter(filter)
 
     @QueryMapping
     open fun entity(@Argument id: String): GraphEntityGql? =
         service.findById(id.requireLong("id"))
-
-    @QueryMapping
-    open fun entitiesByType(@Argument entityType: String): List<GraphEntityGql> =
-        service.findByEntityType(entityType)
-
-    @QueryMapping
-    open fun entitiesByParent(@Argument(name = "parentId") parentId: String?): List<GraphEntityGql> =
-        service.findByParent(parentId.parseLongOrNull())
 
     @MutationMapping
     open fun createEntity(@Argument input: CreateGraphEntityInput): GraphEntityGql =
@@ -36,7 +29,4 @@ open class GraphqlCtrl(private val service: GraphEntityService) {
 
     private fun String.requireLong(field: String): Long =
         trim().toLongOrNull() ?: throw IllegalArgumentException("invalid $field: $this")
-
-    private fun String?.parseLongOrNull(): Long? =
-        this?.trim()?.takeIf { text: String -> text.isNotEmpty() }?.toLongOrNull()
 }

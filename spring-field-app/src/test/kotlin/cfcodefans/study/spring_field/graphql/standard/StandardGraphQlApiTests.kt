@@ -33,13 +33,25 @@ class StandardGraphQlApiTests {
     }
 
     @Test
-    fun `POST graphql entitiesByType filters`() {
-        val body: String = """{"query":"query { entitiesByType(entityType: \"person\") { id name } }"}"""
+    fun `POST graphql entities filter by entityType`() {
+        val body: String = """{"query":"query { entities(filter: { entityType: \"person\" }) { id name } }"}"""
         mockMvc.perform(post("/graphql")
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(body))
             .andExpect(status().isOk)
-            .andExpect(jsonPath("$.data.entitiesByType[0].name")
+            .andExpect(jsonPath("$.data.entities[0].name")
                            .value("Ada"))
+    }
+
+    @Test
+    fun `POST graphql entities filter rootOnly and nameContains`() {
+        val body: String =
+            "{\"query\":\"query { entities(filter: { rootOnly: true, nameContains: \\\"node\\\" }) { name entityType } }\"}"
+        mockMvc.perform(post("/graphql")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(body))
+            .andExpect(status().isOk)
+            .andExpect(jsonPath("$.data.entities.length()").value(1))
+            .andExpect(jsonPath("$.data.entities[0].name").value("Orphan node"))
     }
 }

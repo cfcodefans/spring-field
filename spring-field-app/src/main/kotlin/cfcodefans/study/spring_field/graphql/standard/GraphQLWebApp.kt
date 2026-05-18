@@ -38,7 +38,7 @@ open class GraphQLWebApp {
 
     @PostConstruct
     open fun logStartupHints() {
-        log.info("GraphQLWebApp — try GraphiQL at http://localhost:${PORT}/graphiql/ (trailing slash) and POST /graphql (profile graphql-web).")
+        log.info("GraphQLWebApp — GraphiQL http://localhost:${PORT}/graphiql/ ; POST /graphql ; try entities(filter: { entityType: \"person\" }) (profile graphql-web).")
     }
 }
 

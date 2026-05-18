@@ -1,6 +1,8 @@
 package cfcodefans.study.spring_field.graphql.standard
 
 import cfcodefans.study.spring_field.commons.Jsons2
+import org.springframework.data.domain.Sort
+import org.springframework.data.jpa.domain.Specification
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -8,27 +10,21 @@ import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
 
 @Service
-open class GraphEntityService(private val repo: GraphEntityRepo) {
+open class GraphEntityService(private val repo: IGraphEntityRepo) {
     private val isoFmt: DateTimeFormatter = DateTimeFormatter.ISO_INSTANT
 
-    open fun findAll(): List<GraphEntityGql> = repo
-        .findAll()
-        .map { row: GraphEntity -> toGql(row) }
+    /**
+     * Single list entry point: optional [filter] becomes dynamic `WHERE` clauses (AND).
+     * Replaces separate `entitiesByType` / `entitiesByParent`-style operations for study.
+     */
+    open fun findWithFilter(filter: GraphEntityFilterInput?): List<GraphEntityGql> {
+        val spec: Specification<GraphEntity> = filter.toSpecification()
+        return repo.findAll(spec, Sort.by(Sort.Direction.ASC, "id")).map { row: GraphEntity -> toGql(row) }
+    }
 
     open fun findById(id: Long): GraphEntityGql? = repo
         .findByIdOrNull(id)
         ?.let { found: GraphEntity -> toGql(found) }
-
-    open fun findByEntityType(entityType: String): List<GraphEntityGql> = repo
-        .findByEntityType(entityType)
-        .map { row: GraphEntity -> toGql(row) }
-
-    open fun findByParent(parentId: Long?): List<GraphEntityGql> = (
-            if (parentId == null)
-                repo.findByParentIdIsNull()
-            else
-                repo.findByParentId(parentId)
-            ).map { row: GraphEntity -> toGql(row) }
 
     @Transactional
     open fun create(input: CreateGraphEntityInput): GraphEntityGql = GraphEntity(entityType = input.entityType,
@@ -107,3 +103,48 @@ data class UpdateGraphEntityInput(
         val note: String? = null,
         val tags: List<String>? = null,
 )
+
+/** Mirrors `GraphEntityFilterInput` in GraphQL schema; bound from GraphQL variables / literals. */
+data class GraphEntityFilterInput(
+        val entityType: String? = null,
+        val parentId: String? = null,
+        val rootOnly: Boolean? = null,
+        val nameContains: String? = null,
+)
+
+private fun GraphEntityFilterInput?.toSpecification(): Specification<GraphEntity> {
+    if (this == null) {
+        return Specification { _, _, cb -> cb.conjunction() }
+    }
+    val parts: MutableList<Specification<GraphEntity>> = mutableListOf()
+    entityType?.trim()?.takeIf { text: String -> text.isNotEmpty() }?.let { et: String ->
+        parts += Specification { root, _, cb ->
+            cb.equal(root.get<Any>("entityType"), et)
+        }
+    }
+    val parentIdLong: Long? = parentId?.trim()?.takeIf { text: String -> text.isNotEmpty() }?.toLongOrNull()
+    if (parentIdLong != null) {
+        parts += Specification { root, _, cb ->
+            cb.equal(root.get<Long>("parentId"), parentIdLong)
+        }
+    } else if (rootOnly == true) {
+        parts += Specification { root, _, cb ->
+            cb.isNull(root.get<Long>("parentId"))
+        }
+    }
+    nameContains?.trim()?.takeIf { text: String -> text.isNotEmpty() }?.let { needle: String ->
+        val escaped: String = needle.lowercase()
+            .replace("\\", "\\\\")
+            .replace("%", "\\%")
+            .replace("_", "\\_")
+        val pattern: String = "%$escaped%"
+        parts += Specification { root, _, cb ->
+            val namePath = cb.lower(root.get("name"))
+            cb.like(namePath, pattern, '\\')
+        }
+    }
+    if (parts.isEmpty()) {
+        return Specification { _, _, cb -> cb.conjunction() }
+    }
+    return parts.reduce { acc: Specification<GraphEntity>, next: Specification<GraphEntity> -> acc.and(next) }
+}
