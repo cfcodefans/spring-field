@@ -1,0 +1,110 @@
+---
+description: Spring-field Kotlin, TypeScript, and Spring coding conventions
+alwaysApply: true
+---
+
+# Coding Conventions
+
+## Scope and changes
+
+- Change only what the task requires; match surrounding naming, imports, and abstraction level.
+- Prefer extending existing helpers (`Jsons2`, `AutoCfgWithout*`) over parallel utilities.
+
+## Format (compact)
+
+- Prefer **compact** layout: one line when it fits; **multi-line parameter lists are fine** when needed.
+- **No trailing comma** in parameter / argument lists.
+- **No blank lines** immediately after `(` or immediately before `)` — every line between parentheses must carry meaningful parameters or arguments.
+- Closing `)` may share a line with the last argument, or follow it on the next line **only if that line is not empty** (last line before `)` must not be whitespace-only).
+
+```kotlin
+// ✅ GOOD — single line
+fun buildTree(root: Path = defaultRoot()): GraphEntityNode
+
+// ✅ GOOD — wrapped; each line has content; no blank lines inside ( )
+@SpringBootTest(classes = [RepoApp::class], webEnvironment = SpringBootTest.WebEnvironment.NONE,
+    useMainMethod = SpringBootTest.UseMainMethod.WHEN_AVAILABLE, properties = [RepoTestSpringProps.DATASOURCE_URL])
+
+// ❌ BAD — trailing comma
+fun buildTree(
+    root: Path = defaultRoot(),
+): GraphEntityNode
+
+// ❌ BAD — blank line after ( or before )
+fun buildTree(
+
+    root: Path = defaultRoot()
+): GraphEntityNode
+```
+
+```typescript
+// ✅ GOOD
+function load(root: string, depth: number): Node { … }
+
+// ✅ GOOD — wrapped
+graphRepo.findAll(
+    spec, PageRequest.of(page, size, Sort.by("name")))
+
+// ❌ BAD — trailing comma; blank line before )
+function load(
+  root: string,
+  depth: number,
+
+): Node { … }
+```
+
+## Naming
+
+| Kind | Rule | Examples |
+|------|------|----------|
+| Interface | Prefix **`I`** | `IGraphEntityRepo`, `IUserService` |
+| Type alias / declaration | Prefix **`T`** | `TGraphNode`, `TApiResp` |
+| Repository | Suffix **`Repo`** (not `Repository`) | `GraphEntityRepo`, `UserRepo` |
+| Controller | Suffix **`Ctrl`** (not `Controller`) | `GraphqlCtrl`, `QuoteCtrl` |
+| Request | Suffix **`Req`** | `CreateUserReq`, `SearchReq` |
+| Response | Suffix **`Resp`** | `UserResp`, `GraphEntityResp` |
+
+```kotlin
+// ✅ GOOD
+interface IGraphEntityRepo : JpaRepository<GraphEntity, Long>
+typealias TEntityId = Long
+@RestController
+open class QuoteCtrl
+data class CreateQuoteReq(val text: String)
+data class QuoteResp(val id: Long, val text: String)
+```
+
+## Explicit types (Kotlin and TypeScript)
+
+- Prefer **explicit types** on locals, parameters, and callbacks when readability helps — do not rely on inference alone for non-trivial code.
+- Kotlin: `val root: Path`, `{ entity: GraphEntity -> … }`
+- TypeScript: `const root: string`, `items.map((entity: GraphEntity) => …)`, explicit return types on exported functions
+
+## Kotlin
+
+- Use **Kotlin string templates** in logs: `log.info("saved ${saved.name}")` — not SLF4J `{}` placeholders.
+- JPA entities: **`open` classes**, mutable `var` properties, no `data class` on `@Entity`.
+
+## TypeScript
+
+- Prefer `const` / `let` with explicit types; avoid `any` unless justified and narrow at boundaries.
+- Match existing module style in `standalone_web` / frontend static assets.
+
+## Spring Boot tests (JPA labs)
+
+- Self-contained slices may live in test sources when intentional; keep datasource/JPA props inline or in a small `*SpringProps` object.
+- **File-backed H2** for durable dev data: `temp/h2/` (git-ignored); `ddl-auto=update`.
+- Do **not** put `@Transactional` on tests that must persist rows to disk — Spring Test rolls them back.
+- Seed idempotently when reruns should keep data (e.g. skip insert when `count() > 0`).
+- Separate **build** (in-memory tree / generator) from **persist** (repository `insertTree`, parent before child).
+
+## JPA / GraphEntity
+
+- Surrogate key: `id`; business identity: **`name` + `lineage`** (exclude `id` from `equals`/`hashCode`).
+- JSON columns: `@JdbcTypeCode(SqlTypes.JSON)`; serialize with **`Jsons2`** (Jackson 2 + `JavaTimeModule` for `java.time`).
+- Store relative paths in JSON `data`; avoid machine-specific fields like `absolutePath`.
+
+## Logging and docs
+
+- Log messages: complete sentences, Kotlin templates, proportional detail.
+- Link guides in KDoc when mirroring a Spring guide (e.g. accessing-data-jpa).
