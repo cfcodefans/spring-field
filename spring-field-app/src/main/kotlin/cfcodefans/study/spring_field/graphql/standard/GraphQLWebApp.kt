@@ -1,11 +1,13 @@
 package cfcodefans.study.spring_field.graphql.standard
 
+import cfcodefans.study.spring_field.RepoTestSpringProps
 import cfcodefans.study.spring_field.commons.TrafficLogFilter
 import jakarta.annotation.PostConstruct
 import jakarta.servlet.annotation.WebFilter
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.boot.SpringApplication
+import org.springframework.boot.SpringBootConfiguration
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.graphql.autoconfigure.security.GraphQlWebMvcSecurityAutoConfiguration
 import org.springframework.boot.security.autoconfigure.SecurityAutoConfiguration
@@ -19,16 +21,13 @@ import org.springframework.web.bind.annotation.ControllerAdvice
 import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.context.request.WebRequest
 
-@SpringBootApplication(
-        scanBasePackages = [GraphQLWebApp.BASE_PACKAGE],
-        exclude = [
-            SecurityAutoConfiguration::class,
-            UserDetailsServiceAutoConfiguration::class,
-            ServletWebSecurityAutoConfiguration::class,
-            GraphQlWebMvcSecurityAutoConfiguration::class,
-        ],
-)
+@SpringBootApplication(scanBasePackages = [GraphQLWebApp.BASE_PACKAGE],
+                       exclude = [SecurityAutoConfiguration::class,
+                           UserDetailsServiceAutoConfiguration::class,
+                           ServletWebSecurityAutoConfiguration::class,
+                           GraphQlWebMvcSecurityAutoConfiguration::class])
 @EnableJpaAuditing
+@SpringBootConfiguration
 open class GraphQLWebApp {
     companion object {
         val log: Logger = LoggerFactory.getLogger(GraphQLWebApp::class.java)
@@ -38,7 +37,7 @@ open class GraphQLWebApp {
 
     @PostConstruct
     open fun logStartupHints() {
-        log.info("GraphQLWebApp — GraphiQL http://localhost:${PORT}/graphiql/ ; POST /graphql ; try entities(filter: { entityType: \"person\" }) (profile graphql-web).")
+        log.info("GraphQLWebApp — GraphiQL http://localhost:${PORT}/graphiql/ ; POST /graphql ; try entities(filter: { entityTypeIn: [\"person\", \"node\"] }) (profile graphql-web).")
     }
 }
 
@@ -47,7 +46,16 @@ fun main(args: Array<String>) {
                           *args,
                           "--spring.profiles.active=graphql-web",
                           "--server.port=${GraphQLWebApp.PORT}",
-                          "--server.compression.enabled=true")
+                          "--server.compression.enabled=true",
+                          RepoTestSpringProps.ACTIVE_PROFILE_LAB,
+                          RepoTestSpringProps.DATASOURCE_URL,
+                          RepoTestSpringProps.DATASOURCE_DRIVER,
+                          RepoTestSpringProps.DATASOURCE_USERNAME,
+                          RepoTestSpringProps.DATASOURCE_PASSWORD,
+                          RepoTestSpringProps.JPA_DDL_AUTO,
+                          RepoTestSpringProps.JPA_SHOW_SQL,
+                          RepoTestSpringProps.JPA_OPEN_IN_VIEW,
+                          RepoTestSpringProps.JPA_TIME_ZONE)
 }
 
 @ControllerAdvice

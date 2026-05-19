@@ -11,10 +11,23 @@ type GraphEntity {
   updatedAt: String!
 }
 
-"""Optional filters are combined with AND. Omit the whole input or leave fields unset to skip that constraint."""
+"""Inclusive ISO-8601 instant range (e.g. 2025-01-01T00:00:00Z)."""
+input InstantRangeInput {
+  from: String!
+  to: String!
+}
+
+"""
+Optional filters are combined with AND.
+Omit the whole input or leave fields unset to skip that constraint.
+"""
 input GraphEntityFilterInput {
+  """Exact match on id."""
+  id: ID
   """Exact match on entity_type."""
   entityType: String
+  """Match entity_type in this list (SQL IN)."""
+  entityTypeIn: [String!]
   """Match rows with this parent id."""
   parentId: ID
   """
@@ -22,8 +35,18 @@ input GraphEntityFilterInput {
   Ignored when parentId is set (parentId wins).
   """
   rootOnly: Boolean
-  """Case-insensitive substring match on name."""
+  """
+  Case-insensitive LIKE on name; use % and _ as wildcards (escape with \\).
+  """
+  nameLike: String
+  """Case-insensitive substring match on name (wraps the term with %)."""
   nameContains: String
+  """Case-insensitive LIKE on serialized data JSON."""
+  dataLike: String
+  """Case-insensitive LIKE on serialized note JSON."""
+  noteLike: String
+  """updated_at between from and to (inclusive)."""
+  updatedAtBetween: InstantRangeInput
 }
 
 input CreateGraphEntityInput {

@@ -1,5 +1,7 @@
 package cfcodefans.study.spring_field.spring.examples.repo
 
+import cfcodefans.study.spring_field.RepoTestDataDirs
+import cfcodefans.study.spring_field.RepoTestSpringProps
 import cfcodefans.study.spring_field.commons.Jsons2
 import cfcodefans.study.spring_field.spring.boot.AutoCfgWithoutSecurity
 import cfcodefans.study.spring_field.spring.boot.AutoCfgWithoutServletWebStack
@@ -7,6 +9,10 @@ import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.node.ObjectNode
 import jakarta.persistence.*
+import jakarta.persistence.criteria.CriteriaBuilder
+import jakarta.persistence.criteria.CriteriaQuery
+import jakarta.persistence.criteria.Expression
+import jakarta.persistence.criteria.Root
 import org.hibernate.annotations.JdbcTypeCode
 import org.hibernate.type.SqlTypes
 import org.junit.jupiter.api.Assertions.*
@@ -24,7 +30,9 @@ import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.context.annotation.ComponentScan
 import org.springframework.data.annotation.CreatedDate
 import org.springframework.data.annotation.LastModifiedDate
+import org.springframework.data.domain.Sort
 import org.springframework.data.jpa.domain.PredicateSpecification
+import org.springframework.data.jpa.domain.Specification
 import org.springframework.data.jpa.domain.support.AuditingEntityListener
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor
@@ -35,43 +43,12 @@ import org.springframework.transaction.annotation.Transactional
 import java.io.IOException
 import java.nio.file.Files
 import java.nio.file.Path
-import java.nio.file.Paths
 import java.time.Instant
 import java.util.*
 import kotlin.io.path.extension
 import kotlin.io.path.name
 import kotlin.jvm.optionals.getOrNull
 
-/**
- * File-backed H2 under `<projectRoot>/temp/h2` (git-ignored). No extra `application-*.properties`.
- */
-private object RepoTestDataDirs {
-    const val TEMP_DIR_NAME: String = "temp"
-    const val H2_SUBDIR: String = "h2"
-    const val H2_DB_NAME: String = "repotests"
-
-    fun projectRoot(): Path = Paths.get("").toAbsolutePath().normalize()
-
-    fun tempRoot(): Path = projectRoot().resolve(TEMP_DIR_NAME)
-
-    fun h2Directory(): Path = tempRoot().resolve(H2_SUBDIR)
-
-    /** Creates `temp/h2` for H2 file storage (`repotests.mv.db`, etc.). */
-    fun ensureH2Directory(): Path = h2Directory().also { Files.createDirectories(it) }
-}
-
-private object RepoTestSpringProps {
-    const val ACTIVE_PROFILE_LAB: String = "spring.profiles.active=lab"
-    const val DATASOURCE_URL: String =
-        "spring.datasource.url=jdbc:h2:file:./${RepoTestDataDirs.TEMP_DIR_NAME}/${RepoTestDataDirs.H2_SUBDIR}/${RepoTestDataDirs.H2_DB_NAME};DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE"
-    const val DATASOURCE_DRIVER: String = "spring.datasource.driver-class-name=org.h2.Driver"
-    const val DATASOURCE_USERNAME: String = "spring.datasource.username=sa"
-    const val DATASOURCE_PASSWORD: String = "spring.datasource.password="
-    const val JPA_DDL_AUTO: String = "spring.jpa.hibernate.ddl-auto=update"
-    const val JPA_SHOW_SQL: String = "spring.jpa.show-sql=true"
-    const val JPA_OPEN_IN_VIEW: String = "spring.jpa.open-in-view=false"
-    const val JPA_TIME_ZONE: String = "spring.jpa.properties.hibernate.jdbc.time_zone=UTC"
-}
 
 /**
  * Generic graph-style entity: hierarchical nodes with JSON payloads and tags.
@@ -331,6 +308,9 @@ open class RepoTests {
     @Autowired
     open lateinit var graphRepo: IGraphEntityRepo
 
+    @PersistenceContext
+    open lateinit var entityManager: EntityManager
+
     @BeforeEach
     open fun prepareDatabase() {
         val h2Dir: Path = RepoTestDataDirs.ensureH2Directory()
@@ -393,13 +373,111 @@ open class RepoTests {
 
     @Test
     open fun testSpecifications() {
+        if (graphRepo.count() == 0L) {
+            val root: Path = FsGraphEntityGenerator.defaultRoot()
+            graphRepo.insertTree(FsGraphEntityGenerator.buildTree(root))
+        }
+
         run {
             val ge: GraphEntity? = PredicateSpecification
                 .unrestricted<GraphEntity>()
                 .and { from, cb -> from.get<String>("name").equalTo("RepoTests.kt") }
                 .let { graphRepo.findOne(it) }
                 .getOrNull()
-            log.info(ge.toString())
+            assertNotNull(ge)
+            log.info("exact match: ${ge.toString()}")
+        }
+
+        run {
+            val types: List<String> = listOf("file", "directory")
+            val rows: List<GraphEntity> = PredicateSpecification
+                .unrestricted<GraphEntity>()
+                .and { from, cb -> from.get<String>("entityType").`in`(types) }
+                .let { graphRepo.findAll(it) }
+            assertTrue(rows.isNotEmpty())
+            assertTrue(rows.all { entity: GraphEntity -> entity.entityType in types })
+            log.info("IN entityType $types: ${rows.size} rows")
+        }
+
+        run {
+            val needle: String = "Repo"
+            val pattern: String = "%${needle.lowercase()}%"
+            val rows: List<GraphEntity> = PredicateSpecification
+                .unrestricted<GraphEntity>()
+                .and { from, cb ->
+                    val namePath: Expression<String?> = cb.lower(from.get("name"))
+                    cb.like(namePath, pattern, '\\')
+                }
+                .let { graphRepo.findAll(it) }
+            assertTrue(rows.isNotEmpty())
+            assertTrue(rows.all { entity: GraphEntity -> entity.name.contains(needle, ignoreCase = true) })
+            log.info("CONTAINS name ~ $needle: ${rows.size} rows; sample=${rows.take(3).map { it.name }}")
+        }
+
+        run {
+            val anchor: GraphEntity = graphRepo.findByName("RepoTests.kt").first()
+            val rangeStart: Instant = anchor.createdAt.minusSeconds(3600)
+            val rangeEnd: Instant = anchor.createdAt.plusSeconds(3600)
+            val rows: List<GraphEntity> = PredicateSpecification
+                .unrestricted<GraphEntity>()
+                .and { root, cb ->
+                    val createdAtPath = root.get<Instant>("createdAt")
+                    cb.between(createdAtPath, rangeStart, rangeEnd)
+                }
+                .let { graphRepo.findAll(it) }
+            assertTrue(rows.any { entity: GraphEntity -> entity.name == "RepoTests.kt" })
+            assertTrue(rows.all { entity: GraphEntity ->
+                !entity.createdAt.isBefore(rangeStart) && !entity.createdAt.isAfter(rangeEnd)
+            })
+            log.info("BETWEEN createdAt [$rangeStart, $rangeEnd]: ${rows.size} rows")
+        }
+
+        run {
+            val suffix: String = ".kt"
+            val pattern: String = "%${suffix.lowercase()}"
+            val rows: List<GraphEntity> = PredicateSpecification
+                .unrestricted<GraphEntity>()
+                .and { from, cb -> cb.equal(from.get<String>("entityType"), "file") }
+                .and { from, cb ->
+                    val namePath: Expression<String?> = cb.lower(from.get("name"))
+                    cb.like(namePath, pattern, '\\')
+                }
+                .let { graphRepo.findAll(it) }
+            assertTrue(rows.isNotEmpty())
+            assertTrue(rows.all { entity: GraphEntity ->
+                entity.entityType == "file" && entity.name.lowercase().endsWith(suffix)
+            })
+            assertTrue(rows.any { entity: GraphEntity -> entity.name == "RepoTests.kt" })
+            log.info("AND entityType=file AND name LIKE $pattern: ${rows.size} rows; sample=${rows.take(3).map { it.name }}")
+        }
+
+        run {
+            val rows: List<GraphEntity> = Specification
+                .unrestricted<GraphEntity>()
+                .and { from, cb -> cb.equal(from.get<String>("entityType"), "file") }
+                .let { graphRepo.findAll(it, Sort.by(Sort.Direction.ASC, "name")) }
+            assertTrue(rows.size >= 2, "need at least two file rows to verify sort order")
+            val names: List<String> = rows.map { entity: GraphEntity -> entity.name }
+            assertEquals(names.sorted(), names)
+            log.info("ORDER BY name ASC (files): first=${rows.first().name}, last=${rows.last().name}")
+        }
+
+        run {
+            val cb: CriteriaBuilder = entityManager.criteriaBuilder
+            val cq: CriteriaQuery<Array<Any>?> = cb.createQuery(Array<Any>::class.java)
+            val root: Root<GraphEntity> = cq.from(GraphEntity::class.java)
+            val entityTypePath: jakarta.persistence.criteria.Path<String> = root.get("entityType")
+            cq.multiselect(entityTypePath, cb.count(root))
+            cq.groupBy(entityTypePath)
+            cq.orderBy(cb.desc(cb.count(root)))
+            @Suppress("UNCHECKED_CAST")
+            val grouped: List<Array<Any>> = entityManager.createQuery(cq).resultList as List<Array<Any>>
+            assertTrue(grouped.isNotEmpty())
+            grouped.forEach { row: Array<Any> ->
+                log.info("GROUP BY entityType: ${row[0]} -> count ${row[1]}")
+            }
+            val typesSeen: Set<String> = grouped.map { row: Array<Any> -> row[0] as String }.toSet()
+            assertTrue("file" in typesSeen && "directory" in typesSeen)
         }
     }
 }

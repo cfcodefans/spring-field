@@ -6,6 +6,7 @@ import org.springframework.data.jpa.domain.Specification
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import java.time.Instant
 import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
 
@@ -104,47 +105,116 @@ data class UpdateGraphEntityInput(
         val tags: List<String>? = null,
 )
 
+/** Mirrors `InstantRangeInput` in GraphQL schema. */
+data class InstantRangeInput(
+        val from: String,
+        val to: String,
+)
+
 /** Mirrors `GraphEntityFilterInput` in GraphQL schema; bound from GraphQL variables / literals. */
 data class GraphEntityFilterInput(
+        val id: String? = null,
         val entityType: String? = null,
+        val entityTypeIn: List<String>? = null,
         val parentId: String? = null,
         val rootOnly: Boolean? = null,
+        val nameLike: String? = null,
         val nameContains: String? = null,
+        val dataLike: String? = null,
+        val noteLike: String? = null,
+        val updatedAtBetween: InstantRangeInput? = null,
 )
+
+private const val MAX_ENTITY_TYPE_IN: Int = 100
 
 private fun GraphEntityFilterInput?.toSpecification(): Specification<GraphEntity> {
     if (this == null) {
-        return Specification { _, _, cb -> cb.conjunction() }
+        return unrestrictedSpec()
     }
     val parts: MutableList<Specification<GraphEntity>> = mutableListOf()
-    entityType?.trim()?.takeIf { text: String -> text.isNotEmpty() }?.let { et: String ->
-        parts += Specification { root, _, cb ->
-            cb.equal(root.get<Any>("entityType"), et)
-        }
+    id?.trim()?.takeIf { text: String -> text.isNotEmpty() }?.toLongOrNull()?.let { idLong: Long ->
+        parts += equalLongSpec("id", idLong)
     }
+    entityType?.trim()?.takeIf { text: String -> text.isNotEmpty() }?.let { et: String ->
+        parts += equalStringSpec("entityType", et)
+    }
+    entityTypeIn?.map { value: String -> value.trim() }
+        ?.filter { text: String -> text.isNotEmpty() }
+        ?.distinct()
+        ?.takeIf { values: List<String> -> values.isNotEmpty() }
+        ?.let { types: List<String> ->
+            require(types.size <= MAX_ENTITY_TYPE_IN) {
+                "entityTypeIn supports at most $MAX_ENTITY_TYPE_IN values"
+            }
+            parts += Specification { root, _, cb ->
+                root.get<String>("entityType").`in`(types)
+            }
+        }
     val parentIdLong: Long? = parentId?.trim()?.takeIf { text: String -> text.isNotEmpty() }?.toLongOrNull()
     if (parentIdLong != null) {
-        parts += Specification { root, _, cb ->
-            cb.equal(root.get<Long>("parentId"), parentIdLong)
-        }
+        parts += equalLongSpec("parentId", parentIdLong)
     } else if (rootOnly == true) {
         parts += Specification { root, _, cb ->
             cb.isNull(root.get<Long>("parentId"))
         }
     }
+    nameLike?.trim()?.takeIf { text: String -> text.isNotEmpty() }?.let { pattern: String ->
+        parts += stringLikeSpec("name", pattern, wrapContains = false)
+    }
     nameContains?.trim()?.takeIf { text: String -> text.isNotEmpty() }?.let { needle: String ->
-        val escaped: String = needle.lowercase()
-            .replace("\\", "\\\\")
-            .replace("%", "\\%")
-            .replace("_", "\\_")
-        val pattern: String = "%$escaped%"
+        parts += stringLikeSpec("name", needle, wrapContains = true)
+    }
+    dataLike?.trim()?.takeIf { text: String -> text.isNotEmpty() }?.let { pattern: String ->
+        parts += jsonLikeSpec("data", pattern)
+    }
+    noteLike?.trim()?.takeIf { text: String -> text.isNotEmpty() }?.let { pattern: String ->
+        parts += jsonLikeSpec("note", pattern)
+    }
+    updatedAtBetween?.let { range: InstantRangeInput ->
+        val rangeStart: Instant = Instant.parse(range.from.trim())
+        val rangeEnd: Instant = Instant.parse(range.to.trim())
         parts += Specification { root, _, cb ->
-            val namePath = cb.lower(root.get("name"))
-            cb.like(namePath, pattern, '\\')
+            val updatedAtPath = root.get<Instant>("updatedAt")
+            cb.between(updatedAtPath, rangeStart, rangeEnd)
         }
     }
     if (parts.isEmpty()) {
-        return Specification { _, _, cb -> cb.conjunction() }
+        return unrestrictedSpec()
     }
     return parts.reduce { acc: Specification<GraphEntity>, next: Specification<GraphEntity> -> acc.and(next) }
 }
+
+private fun unrestrictedSpec(): Specification<GraphEntity> =
+    Specification { _, _, cb -> cb.conjunction() }
+
+private fun equalStringSpec(attribute: String, value: String): Specification<GraphEntity> =
+    Specification { root, _, cb -> cb.equal(root.get<String>(attribute), value) }
+
+private fun equalLongSpec(attribute: String, value: Long): Specification<GraphEntity> =
+    Specification { root, _, cb -> cb.equal(root.get<Long>(attribute), value) }
+
+private fun stringLikeSpec(attribute: String, rawPattern: String, wrapContains: Boolean): Specification<GraphEntity> {
+    val pattern: String = if (wrapContains) {
+        "%${escapeLikeLiteral(rawPattern)}%"
+    } else {
+        rawPattern.lowercase()
+    }
+    return Specification { root, _, cb ->
+        val path = cb.lower(root.get<String>(attribute))
+        cb.like(path, pattern, '\\')
+    }
+}
+
+private fun jsonLikeSpec(attribute: String, rawPattern: String): Specification<GraphEntity> {
+    val pattern: String = rawPattern.lowercase()
+    return Specification { root, _, cb ->
+        val jsonAsString = root.get<Any>(attribute).`as`(String::class.java)
+        val path = cb.lower(jsonAsString)
+        cb.like(path, pattern, '\\')
+    }
+}
+
+private fun escapeLikeLiteral(needle: String): String = needle.lowercase()
+    .replace("\\", "\\\\")
+    .replace("%", "\\%")
+    .replace("_", "\\_")

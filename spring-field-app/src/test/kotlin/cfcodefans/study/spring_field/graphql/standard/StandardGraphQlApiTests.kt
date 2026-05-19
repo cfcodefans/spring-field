@@ -1,5 +1,6 @@
 package cfcodefans.study.spring_field.graphql.standard
 
+import com.jayway.jsonpath.JsonPath
 import org.hamcrest.Matchers.greaterThan
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
@@ -53,5 +54,50 @@ class StandardGraphQlApiTests {
             .andExpect(status().isOk)
             .andExpect(jsonPath("$.data.entities.length()").value(1))
             .andExpect(jsonPath("$.data.entities[0].name").value("Orphan node"))
+    }
+
+    @Test
+    fun `POST graphql entities filter entityTypeIn`() {
+        val body: String =
+            """{"query":"query { entities(filter: { entityTypeIn: [\"person\", \"node\"] }) { name entityType } }"}"""
+        mockMvc.perform(post("/graphql")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(body))
+            .andExpect(status().isOk)
+            .andExpect(jsonPath("$.data.entities.length()").value(2))
+    }
+
+    @Test
+    fun `POST graphql entities filter by id and entityTypeIn with AND`() {
+        val listBody: String = """{"query":"query { entities { id name } }"}"""
+        val listJson: String = mockMvc.perform(post("/graphql")
+                                                   .contentType(MediaType.APPLICATION_JSON)
+                                                   .content(listBody))
+            .andExpect(status().isOk)
+            .andReturn()
+            .response
+            .contentAsString
+        val adaId: String = JsonPath.read(listJson, "$.data.entities[?(@.name == 'Ada')].id[0]")
+        val filterBody: String =
+            """{"query":"query { entities(filter: { id: \"$adaId\", entityTypeIn: [\"person\", \"document\"] }) { id name entityType } }"}"""
+        mockMvc.perform(post("/graphql")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(filterBody))
+            .andExpect(status().isOk)
+            .andExpect(jsonPath("$.data.entities.length()").value(1))
+            .andExpect(jsonPath("$.data.entities[0].name").value("Ada"))
+            .andExpect(jsonPath("$.data.entities[0].entityType").value("person"))
+    }
+
+    @Test
+    fun `POST graphql entities filter dataLike noteLike and updatedAtBetween`() {
+        val body: String =
+            "{\"query\":\"query { entities(filter: { entityType: \\\"person\\\", dataLike: \\\"%architect%\\\", noteLike: \\\"%seed%\\\", updatedAtBetween: { from: \\\"1970-01-01T00:00:00Z\\\", to: \\\"2099-12-31T23:59:59Z\\\" } }) { name data note } }\"}"
+        mockMvc.perform(post("/graphql")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(body))
+            .andExpect(status().isOk)
+            .andExpect(jsonPath("$.data.entities.length()").value(1))
+            .andExpect(jsonPath("$.data.entities[0].name").value("Ada"))
     }
 }
