@@ -1,4 +1,4 @@
-package cfcodefans.study.spring_field.graphql.standard
+package cfcodefans.study.spring_field.api.query
 
 import cfcodefans.study.spring_field.RepoTestDataDirs
 import cfcodefans.study.spring_field.commons.Jsons2
@@ -84,13 +84,13 @@ open class GraphEntity(@Id
 }
 
 /** In-memory tree node; [entity.parentId] is assigned during [insertTree]. */
-data class GraphEntityNode(val entity: GraphEntity,
+data class GraphEntityNode(val entity: cfcodefans.study.spring_field.api.query.GraphEntity,
                            val children: List<GraphEntityNode> = emptyList()) {
     fun size(): Int = 1 + children.sumOf { child: GraphEntityNode -> child.size() }
 }
 
 /**
- * Walks the file system under [root] and builds a [GraphEntityNode] tree (no database I/O).
+ * Walks the file system under [root] and builds a [cfcodefans.study.spring_field.api.query.GraphEntityNode] tree (no database I/O).
  * [lineage] is the list of ancestor directory names under [root]; [name] is the entry file name.
  */
 object FsGraphEntityGenerator {

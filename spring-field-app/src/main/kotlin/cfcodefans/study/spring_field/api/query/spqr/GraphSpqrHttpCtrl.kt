@@ -1,14 +1,14 @@
-package cfcodefans.study.spring_field.graphql.spqr
+package cfcodefans.study.spring_field.api.query.spqr
 
+import cfcodefans.study.spring_field.commons.Jsons2
+import com.fasterxml.jackson.core.type.TypeReference
+import com.fasterxml.jackson.databind.JsonNode
+import com.fasterxml.jackson.databind.node.ObjectNode
 import graphql.ExecutionInput
 import graphql.ExecutionResult
 import graphql.GraphQL
 import graphql.schema.GraphQLSchema
 import graphql.schema.idl.SchemaPrinter
-import cfcodefans.study.spring_field.commons.Jsons2
-import com.fasterxml.jackson.core.type.TypeReference
-import com.fasterxml.jackson.databind.JsonNode
-import com.fasterxml.jackson.databind.node.ObjectNode
 import org.springframework.http.HttpHeaders
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
@@ -18,7 +18,7 @@ import org.springframework.web.bind.annotation.*
  * Minimal GraphQL-over-HTTP endpoint for the SPQR engine (Spring for GraphQL is not used in this profile).
  */
 @RestController
-@RequestMapping("/graphql")
+@RequestMapping("/graphql/spqr")
 open class GraphSpqrHttpCtrl(private val graphQL: GraphQL,
                              private val graphQLSchema: GraphQLSchema) {
 

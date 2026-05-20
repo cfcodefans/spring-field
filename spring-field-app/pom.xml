@@ -18,7 +18,6 @@
         <kotlin.version>2.3.21</kotlin.version>
         <spring-boot.version>4.0.6</spring-boot.version>
         <jackson3.version>3.1.2</jackson3.version>
-        <springfox.version>2.9.2</springfox.version>
         <springdoc-openapi.version>3.0.3</springdoc-openapi.version>
     </properties>
 
@@ -412,6 +411,26 @@
                 </exclusion>
             </exclusions>
         </dependency>
+
+        <!-- Core JPA dynamic specification translation engine -->
+        <dependency>
+            <groupId>com.turkraft.springfilter</groupId>
+            <artifactId>jpa</artifactId>
+            <version>3.2.5</version>
+        </dependency>
+
+        <!-- Automatic OpenAPI/Swagger document extension for spring-filter -->
+        <dependency>
+            <groupId>com.turkraft.springfilter</groupId>
+            <artifactId>openapi</artifactId>
+            <version>3.2.5</version>
+        </dependency>
+        <dependency>
+            <groupId>com.turkraft.springfilter</groupId>
+            <artifactId>page-sort</artifactId>
+            <version>3.2.5</version>
+        </dependency>
+
         <dependency>
             <groupId>org.springdoc</groupId>
             <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
@@ -422,6 +441,27 @@
                     <artifactId>slf4j-api</artifactId>
                 </exclusion>
             </exclusions>
+        </dependency>
+        <!-- OData v4 (Apache Olingo): URI/$filter parsing + $metadata for graphql.standard demo. -->
+        <dependency>
+            <groupId>org.apache.olingo</groupId>
+            <artifactId>odata-commons-api</artifactId>
+            <version>4.10.0</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.olingo</groupId>
+            <artifactId>odata-commons-core</artifactId>
+            <version>4.10.0</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.olingo</groupId>
+            <artifactId>odata-server-api</artifactId>
+            <version>4.10.0</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.olingo</groupId>
+            <artifactId>odata-server-core</artifactId>
+            <version>4.10.0</version>
         </dependency>
 
 

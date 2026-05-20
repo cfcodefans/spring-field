@@ -69,7 +69,8 @@ object RepoTestSpringProps {
     const val DATASOURCE_PASSWORD: String = "spring.datasource.password="
     const val JPA_DDL_AUTO: String = "spring.jpa.hibernate.ddl-auto=update"
     const val JPA_SHOW_SQL: String = "spring.jpa.show-sql=true"
-    const val JPA_OPEN_IN_VIEW: String = "spring.jpa.open-in-view=false"
+    const val JPA_OPEN_IN_VIEW: String = "spring.jpa.open-in-view=true"
+    const val JPA_SHOW_SQL_FORMAT: String = "spring.jpa.properties.hibernate.format_sql=true"
     const val JPA_TIME_ZONE: String = "spring.jpa.properties.hibernate.jdbc.time_zone=UTC"
 }
 

@@ -1,12 +1,24 @@
-package cfcodefans.study.spring_field.graphql.spqr
+package cfcodefans.study.spring_field.api.query.spqr
 
+import cfcodefans.study.spring_field.api.query.GraphEntity
+import cfcodefans.study.spring_field.api.query.IGraphEntityRepo
+import cfcodefans.study.spring_field.api.query.standard.CreateGraphEntityInput
+import cfcodefans.study.spring_field.api.query.standard.UpdateGraphEntityInput
 import cfcodefans.study.spring_field.commons.Jsons2
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.ObjectNode
+import graphql.GraphQL
+import graphql.schema.GraphQLSchema
+import graphql.schema.idl.SchemaPrinter
+import io.leangen.graphql.GraphQLSchemaGenerator
 import io.leangen.graphql.annotations.GraphQLArgument
 import io.leangen.graphql.annotations.GraphQLIgnore
 import io.leangen.graphql.annotations.GraphQLMutation
 import io.leangen.graphql.annotations.GraphQLQuery
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
+import org.springframework.context.annotation.Bean
+import org.springframework.context.annotation.Configuration
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -14,7 +26,7 @@ import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
 
 @Service
-open class GraphEntityService(private val repo: GraphEntityRepo) {
+open class GraphEntitySpqrService(private val repo: IGraphEntityRepo) {
     private val isoFmt: DateTimeFormatter = DateTimeFormatter.ISO_INSTANT
 
     @GraphQLIgnore
@@ -88,13 +100,13 @@ open class GraphEntityService(private val repo: GraphEntityRepo) {
     open fun entitiesByParent(@GraphQLArgument(name = "parentId") parentId: String?): List<GraphEntityGql> =
         findByParent(parentId?.toLongId())
 
-    @GraphQLMutation
-    open fun createEntity(@GraphQLArgument(name = "input") input: CreateGraphEntityInput): GraphEntityGql =
-        create(input)
-
-    @GraphQLMutation
-    open fun updateEntity(@GraphQLArgument(name = "input") input: UpdateGraphEntityInput): GraphEntityGql =
-        update(input)
+//    @GraphQLMutation
+//    open fun createEntity(@GraphQLArgument(name = "input") input: CreateGraphEntityInput): GraphEntityGql =
+//        create(input)
+//
+//    @GraphQLMutation
+//    open fun updateEntity(@GraphQLArgument(name = "input") input: UpdateGraphEntityInput): GraphEntityGql =
+//        update(input)
 
     @GraphQLMutation
     open fun deleteEntity(@GraphQLArgument(name = "id") id: String): Boolean =
@@ -135,21 +147,42 @@ data class GraphEntityGql(
         val updatedAt: String,
 )
 
-data class CreateGraphEntityInput(
-        val entityType: String,
-        val name: String,
-        val parentId: String? = null,
-        val data: String? = null,
-        val note: String? = null,
-        val tags: List<String>? = null,
-)
+//data class CreateGraphEntityInput(
+//        val entityType: String,
+//        val name: String,
+//        val parentId: String? = null,
+//        val data: String? = null,
+//        val note: String? = null,
+//        val tags: List<String>? = null,
+//)
+//
+//data class UpdateGraphEntityInput(
+//        val id: String,
+//        val entityType: String? = null,
+//        val name: String? = null,
+//        val parentId: String? = null,
+//        val data: String? = null,
+//        val note: String? = null,
+//        val tags: List<String>? = null,
+//)
 
-data class UpdateGraphEntityInput(
-        val id: String,
-        val entityType: String? = null,
-        val name: String? = null,
-        val parentId: String? = null,
-        val data: String? = null,
-        val note: String? = null,
-        val tags: List<String>? = null,
-)
+@Configuration
+open class GraphSpqrSupportBeans {
+    companion object {
+        val log: Logger = LoggerFactory.getLogger(GraphSpqrSupportBeans::class.java)
+    }
+
+    @Bean
+    open fun graphQLSchema(graphEntityService: GraphEntitySpqrService): GraphQLSchema {
+        val schema: GraphQLSchema = GraphQLSchemaGenerator()
+            .withOperationsFromSingleton(graphEntityService, GraphEntitySpqrService::class.java)
+            .generate()
+        val sdlPreview: String = SchemaPrinter().print(schema)
+        log.info("SPQR runtime schema (SDL preview):\n$sdlPreview")
+        return schema
+    }
+
+    @Bean
+    open fun graphQL(schema: GraphQLSchema): GraphQL =
+        GraphQL.newGraphQL(schema).build()
+}

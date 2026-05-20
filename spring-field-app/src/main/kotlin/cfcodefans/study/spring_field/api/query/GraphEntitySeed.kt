@@ -1,4 +1,4 @@
-package cfcodefans.study.spring_field.graphql.standard
+package cfcodefans.study.spring_field.api.query
 
 import cfcodefans.study.spring_field.RepoTestDataDirs
 import org.junit.jupiter.api.Assertions.assertTrue

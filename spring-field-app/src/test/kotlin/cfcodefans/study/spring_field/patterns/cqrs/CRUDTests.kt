@@ -1,7 +1,7 @@
 package cfcodefans.study.spring_field.patterns.cqrs
 
 import org.junit.jupiter.api.Test
-import java.util.UUID
+import java.util.*
 import kotlin.test.assertEquals
 
 open class CRUDTests {

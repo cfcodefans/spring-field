@@ -2,7 +2,6 @@ package cfcodefans.study.spring_field.tests
 
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.getOrElse
-import kotlinx.coroutines.channels.toList
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking

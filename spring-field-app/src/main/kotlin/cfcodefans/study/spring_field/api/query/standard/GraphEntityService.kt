@@ -1,5 +1,7 @@
-package cfcodefans.study.spring_field.graphql.standard
+package cfcodefans.study.spring_field.api.query.standard
 
+import cfcodefans.study.spring_field.api.query.GraphEntity
+import cfcodefans.study.spring_field.api.query.IGraphEntityRepo
 import cfcodefans.study.spring_field.commons.Jsons2
 import org.springframework.data.domain.Sort
 import org.springframework.data.jpa.domain.Specification

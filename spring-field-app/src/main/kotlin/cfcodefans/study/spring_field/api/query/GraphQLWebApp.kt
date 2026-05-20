@@ -1,7 +1,8 @@
-package cfcodefans.study.spring_field.graphql.standard
+package cfcodefans.study.spring_field.api.query
 
 import cfcodefans.study.spring_field.RepoTestSpringProps
 import cfcodefans.study.spring_field.commons.TrafficLogFilter
+import com.turkraft.springfilter.boot.PageSortAutoConfiguration
 import jakarta.annotation.PostConstruct
 import jakarta.servlet.annotation.WebFilter
 import org.slf4j.Logger
@@ -22,22 +23,28 @@ import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.context.request.WebRequest
 
 @SpringBootApplication(scanBasePackages = [GraphQLWebApp.BASE_PACKAGE],
-                       exclude = [SecurityAutoConfiguration::class,
+                       exclude = [
+                           SecurityAutoConfiguration::class,
                            UserDetailsServiceAutoConfiguration::class,
                            ServletWebSecurityAutoConfiguration::class,
-                           GraphQlWebMvcSecurityAutoConfiguration::class])
+                           GraphQlWebMvcSecurityAutoConfiguration::class,
+                           PageSortAutoConfiguration::class,
+                       ])
 @EnableJpaAuditing
 @SpringBootConfiguration
 open class GraphQLWebApp {
     companion object {
         val log: Logger = LoggerFactory.getLogger(GraphQLWebApp::class.java)
-        const val BASE_PACKAGE: String = "cfcodefans.study.spring_field.graphql.standard"
+        const val BASE_PACKAGE: String = "cfcodefans.study.spring_field.api.query"
         const val PORT: Int = 8082
     }
 
     @PostConstruct
     open fun logStartupHints() {
-        log.info("GraphQLWebApp — GraphiQL http://localhost:${PORT}/graphiql/ ; POST /graphql ; try entities(filter: { entityTypeIn: [\"person\", \"node\"] }) (profile graphql-web).")
+        log.info("""GraphQLWebApp — 
+            |GraphiQL http://localhost:${PORT}/graphiql/ ; 
+            |POST /graphql ; 
+            |OData http://localhost:${PORT}/odata/v4/GraphEntities?\filter=entityType eq 'file' (profile graphql-web).""".trimMargin())
     }
 }
 
@@ -54,6 +61,7 @@ fun main(args: Array<String>) {
                           RepoTestSpringProps.DATASOURCE_PASSWORD,
                           RepoTestSpringProps.JPA_DDL_AUTO,
                           RepoTestSpringProps.JPA_SHOW_SQL,
+                          RepoTestSpringProps.JPA_SHOW_SQL_FORMAT,
                           RepoTestSpringProps.JPA_OPEN_IN_VIEW,
                           RepoTestSpringProps.JPA_TIME_ZONE)
 }

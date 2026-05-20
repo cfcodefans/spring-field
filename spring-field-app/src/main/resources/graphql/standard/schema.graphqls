@@ -49,24 +49,24 @@ input GraphEntityFilterInput {
   updatedAtBetween: InstantRangeInput
 }
 
-input CreateGraphEntityInput {
-  entityType: String!
-  name: String!
-  parentId: ID
-  data: String
-  note: String
-  tags: [String!]
-}
-
-input UpdateGraphEntityInput {
-  id: ID!
-  entityType: String
-  name: String
-  parentId: ID
-  data: String
-  note: String
-  tags: [String!]
-}
+#input CreateGraphEntityInput {
+#  entityType: String!
+#  name: String!
+#  parentId: ID
+#  data: String
+#  note: String
+#  tags: [String!]
+#}
+#
+#input UpdateGraphEntityInput {
+#  id: ID!
+#  entityType: String
+#  name: String
+#  parentId: ID
+#  data: String
+#  note: String
+#  tags: [String!]
+#}
 
 type Query {
   """List entities; pass filter to narrow results instead of many separate query fields."""
@@ -75,7 +75,7 @@ type Query {
 }
 
 type Mutation {
-  createEntity(input: CreateGraphEntityInput!): GraphEntity!
-  updateEntity(input: UpdateGraphEntityInput!): GraphEntity!
+#  createEntity(input: CreateGraphEntityInput!): GraphEntity!
+#  updateEntity(input: UpdateGraphEntityInput!): GraphEntity!
   deleteEntity(id: ID!): Boolean!
 }

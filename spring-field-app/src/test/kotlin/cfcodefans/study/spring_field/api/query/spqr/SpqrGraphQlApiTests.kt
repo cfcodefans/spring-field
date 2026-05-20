@@ -1,5 +1,6 @@
-package cfcodefans.study.spring_field.graphql.spqr
+package cfcodefans.study.spring_field.api.query.spqr
 
+import cfcodefans.study.spring_field.api.query.GraphQLWebApp
 import org.hamcrest.Matchers.containsString
 import org.hamcrest.Matchers.greaterThan
 import org.junit.jupiter.api.Test
@@ -15,7 +16,7 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.*
 
-@SpringBootTest(classes = [GraphSpqrWebApp::class], webEnvironment = SpringBootTest.WebEnvironment.MOCK)
+@SpringBootTest(classes = [GraphQLWebApp::class], webEnvironment = SpringBootTest.WebEnvironment.MOCK)
 @AutoConfigureMockMvc
 @ActiveProfiles("graphql-spqr-web")
 open class SpqrGraphQlApiTests {

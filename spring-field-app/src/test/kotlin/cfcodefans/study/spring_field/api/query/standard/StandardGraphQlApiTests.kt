@@ -1,5 +1,6 @@
-package cfcodefans.study.spring_field.graphql.standard
+package cfcodefans.study.spring_field.api.query.standard
 
+import cfcodefans.study.spring_field.api.query.GraphQLWebApp
 import com.jayway.jsonpath.JsonPath
 import org.hamcrest.Matchers.greaterThan
 import org.junit.jupiter.api.Test

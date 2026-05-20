@@ -1,4 +1,4 @@
-package cfcodefans.study.spring_field.graphql.standard
+package cfcodefans.study.spring_field.api.query
 
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -35,4 +35,8 @@ interface IGraphEntityRepo : JpaRepository<GraphEntity, Long>, JpaSpecificationE
         persist(root, null)
         return inserted
     }
+
+    fun findByEntityType(entityType: String): List<GraphEntity>
+    fun findByParentIdIsNull(): List<GraphEntity>
+    fun findByParentId(parentId: Long): List<GraphEntity>
 }
