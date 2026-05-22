@@ -18,8 +18,7 @@ import org.springframework.data.jpa.repository.config.EnableJpaAuditing
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Component
-import org.springframework.web.bind.annotation.ControllerAdvice
-import org.springframework.web.bind.annotation.ExceptionHandler
+import org.springframework.web.bind.annotation.*
 import org.springframework.web.context.request.WebRequest
 
 @SpringBootApplication(scanBasePackages = [GraphQLWebApp.BASE_PACKAGE],
@@ -43,9 +42,11 @@ open class GraphQLWebApp {
     open fun logStartupHints() {
         log.info("""GraphQLWebApp — 
             |GraphiQL http://localhost:${PORT}/graphiql/ ; 
-            |POST /graphql ; 
-            |OData http://localhost:${PORT}/odata/v4/GraphEntities?\filter=entityType eq 'file' (profile graphql-web).""".trimMargin())
+            |POST http://localhost:${PORT}/graphql ; 
+            |OData http://localhost:${PORT}/odata/v4/GraphEntities?\filter=entityType eq 'file' (profile graphql-web).
+            |spring-filter http://localhost:${PORT}/swagger-ui/index.html""".trimMargin())
     }
+
 }
 
 fun main(args: Array<String>) {
@@ -63,7 +64,9 @@ fun main(args: Array<String>) {
                           RepoTestSpringProps.JPA_SHOW_SQL,
                           RepoTestSpringProps.JPA_SHOW_SQL_FORMAT,
                           RepoTestSpringProps.JPA_OPEN_IN_VIEW,
-                          RepoTestSpringProps.JPA_TIME_ZONE)
+                          RepoTestSpringProps.JPA_TIME_ZONE,
+                          RepoTestSpringProps.JACKSON_2_DEFAULT,
+                          "spring.http.converters.preferred-json-mapper=jackson2")
 }
 
 @ControllerAdvice
@@ -90,3 +93,19 @@ open class GraphQLWebApiExceptionHandler {
 @Component
 @WebFilter
 open class TestLogFilter : TrafficLogFilter()
+
+
+@RestController
+@RequestMapping("/default")
+open class DefaultGraphqlCtrl(private val repo: IGraphEntityRepo) {
+    companion object {
+        val log: Logger = LoggerFactory.getLogger(DefaultGraphqlCtrl::class.java)
+    }
+
+    @GetMapping("/top-{pageSize}")
+    open fun getTopNGraphEntity(@PathVariable("pageSize") pageSize: Int): ResponseEntity<List<GraphEntity>> {
+        return repo
+            .findTopN(pageSize)
+            .let { ResponseEntity.ok(it) }
+    }
+}

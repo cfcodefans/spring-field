@@ -4,6 +4,7 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor
+import org.springframework.data.jpa.repository.Query
 import org.springframework.stereotype.Repository
 import org.springframework.transaction.annotation.Transactional
 
@@ -39,4 +40,12 @@ interface IGraphEntityRepo : JpaRepository<GraphEntity, Long>, JpaSpecificationE
     fun findByEntityType(entityType: String): List<GraphEntity>
     fun findByParentIdIsNull(): List<GraphEntity>
     fun findByParentId(parentId: Long): List<GraphEntity>
+
+    @Query("""
+        select ge 
+        from GraphEntity ge 
+        order by ge.id desc 
+        limit :n
+    """)
+    fun findTopN(n: Int): List<GraphEntity>
 }

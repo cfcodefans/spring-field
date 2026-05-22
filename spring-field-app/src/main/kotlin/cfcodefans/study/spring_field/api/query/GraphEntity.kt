@@ -2,9 +2,6 @@ package cfcodefans.study.spring_field.api.query
 
 import cfcodefans.study.spring_field.RepoTestDataDirs
 import cfcodefans.study.spring_field.commons.Jsons2
-import com.fasterxml.jackson.databind.JsonNode
-import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.databind.node.ObjectNode
 import jakarta.persistence.*
 import org.hibernate.annotations.JdbcTypeCode
 import org.hibernate.type.SqlTypes
@@ -54,11 +51,11 @@ open class GraphEntity(@Id
 
                        @JdbcTypeCode(SqlTypes.JSON)
                        @Column(name = "data")
-                       open var data: JsonNode? = null,
+                       open var data: MutableMap<String, Any?>? = null,
 
                        @JdbcTypeCode(SqlTypes.JSON)
                        @Column(name = "note")
-                       open var note: JsonNode? = null,
+                       open var note: MutableMap<String, Any?>? = null,
 
                        @JdbcTypeCode(SqlTypes.JSON)
                        @Column(name = "tags", nullable = false)
@@ -95,7 +92,6 @@ data class GraphEntityNode(val entity: cfcodefans.study.spring_field.api.query.G
  */
 object FsGraphEntityGenerator {
     private val log: Logger = LoggerFactory.getLogger(FsGraphEntityGenerator::class.java)
-    private val json: ObjectMapper = ObjectMapper()
 
     private val SKIP_DIR_NAMES: Set<String> = setOf(
             ".git", ".idea", ".gradle", ".mvn", ".cursor",
@@ -178,17 +174,17 @@ object FsGraphEntityGenerator {
             val extension: String? = path.extension.takeIf { ext: String -> ext.isNotEmpty() }
             extension?.let { ext: String -> tags.add("ext:$ext") }
         }
-
-        val data: ObjectNode = json.createObjectNode()
-            .put("path", root.relativize(path).toString().replace('\\', '/'))
-        if (directory) {
-            data.put("entryKind", "directory")
-        } else {
-            val sizeBytes: Long? = runCatching { Files.size(path) }.getOrNull()
-            sizeBytes?.let { bytes: Long -> data.put("sizeBytes", bytes) }
-            data.put("entryKind", "file")
-        }
-
+        val data: MutableMap<String, Any?> = hashMapOf<String, Any?>()
+            .apply {
+                put("path", root.relativize(path).toString().replace('\\', '/'))
+                if (directory) {
+                    put("entryKind", "directory")
+                } else {
+                    val sizeBytes: Long? = runCatching { Files.size(path) }.getOrNull()
+                    sizeBytes?.let { bytes: Long -> put("sizeBytes", bytes) }
+                    put("entryKind", "file")
+                }
+            }
         return GraphEntity(
                 entityType = entityType,
                 name = path.fileName.toString(),

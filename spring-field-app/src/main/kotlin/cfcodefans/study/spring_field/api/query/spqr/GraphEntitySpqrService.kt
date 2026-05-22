@@ -2,11 +2,9 @@ package cfcodefans.study.spring_field.api.query.spqr
 
 import cfcodefans.study.spring_field.api.query.GraphEntity
 import cfcodefans.study.spring_field.api.query.IGraphEntityRepo
-import cfcodefans.study.spring_field.api.query.standard.CreateGraphEntityInput
-import cfcodefans.study.spring_field.api.query.standard.UpdateGraphEntityInput
+import cfcodefans.study.spring_field.api.query.graphql.CreateGraphEntityInput
+import cfcodefans.study.spring_field.api.query.graphql.UpdateGraphEntityInput
 import cfcodefans.study.spring_field.commons.Jsons2
-import com.fasterxml.jackson.databind.JsonNode
-import com.fasterxml.jackson.databind.node.ObjectNode
 import graphql.GraphQL
 import graphql.schema.GraphQLSchema
 import graphql.schema.idl.SchemaPrinter
@@ -112,17 +110,15 @@ open class GraphEntitySpqrService(private val repo: IGraphEntityRepo) {
     open fun deleteEntity(@GraphQLArgument(name = "id") id: String): Boolean =
         delete(id.toLongIdRequired())
 
-    private fun parseJson(raw: String?): ObjectNode? =
-        raw?.trim()?.takeIf { text: String -> text.isNotEmpty() }
-            ?.let { text: String -> Jsons2.read(text, ObjectNode::class.java) }
+    private fun parseJson(raw: String?): MutableMap<String, Any?>? = Jsons2.readToMutableMap(raw)
 
     private fun toGql(e: GraphEntity): GraphEntityGql = GraphEntityGql(
             id = e.id,
             entityType = e.entityType,
             name = e.name,
             parentId = e.parentId,
-            data = e.data?.let { node: JsonNode -> Jsons2.toStringWithoutPrettyPrinter(node) },
-            note = e.note?.let { node: JsonNode -> Jsons2.toStringWithoutPrettyPrinter(node) },
+            data = Jsons2.toString(e.data),
+            note = Jsons2.toString(e.note),
             tags = e.tags.toList(),
             createdAt = isoFmt.format(e.createdAt.atOffset(ZoneOffset.UTC)),
             updatedAt = isoFmt.format(e.updatedAt.atOffset(ZoneOffset.UTC)),

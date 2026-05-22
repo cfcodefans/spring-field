@@ -1,4 +1,4 @@
-package cfcodefans.study.spring_field.api.query.standard
+package cfcodefans.study.spring_field.api.query.graphql
 
 import cfcodefans.study.spring_field.api.query.GraphQLWebApp
 import org.hamcrest.Matchers.greaterThan

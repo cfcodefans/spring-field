@@ -1,4 +1,4 @@
-package cfcodefans.study.spring_field.api.query.standard
+package cfcodefans.study.spring_field.api.query.graphql
 
 import org.springframework.graphql.data.method.annotation.Argument
 import org.springframework.graphql.data.method.annotation.MutationMapping

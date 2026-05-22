@@ -72,6 +72,7 @@ object RepoTestSpringProps {
     const val JPA_OPEN_IN_VIEW: String = "spring.jpa.open-in-view=true"
     const val JPA_SHOW_SQL_FORMAT: String = "spring.jpa.properties.hibernate.format_sql=true"
     const val JPA_TIME_ZONE: String = "spring.jpa.properties.hibernate.jdbc.time_zone=UTC"
+    const val JACKSON_2_DEFAULT: String = "spring.jackson.use-jackson2-defaults=true"
 }
 
 public object RepoTestDataDirs {

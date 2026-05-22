@@ -1,4 +1,4 @@
-package cfcodefans.study.spring_field.api.query.standard
+package cfcodefans.study.spring_field.api.query.graphql
 
 import cfcodefans.study.spring_field.api.query.GraphEntity
 import cfcodefans.study.spring_field.api.query.IGraphEntityRepo
@@ -33,8 +33,8 @@ open class GraphEntityService(private val repo: IGraphEntityRepo) {
     open fun create(input: CreateGraphEntityInput): GraphEntityGql = GraphEntity(entityType = input.entityType,
                                                                                  name = input.name,
                                                                                  parentId = input.parentId?.toLongId(),
-                                                                                 data = Jsons2.read(input.data),
-                                                                                 note = Jsons2.read(input.note),
+                                                                                 data = Jsons2.readToMutableMap(input.data),
+                                                                                 note = Jsons2.readToMutableMap(input.note),
                                                                                  tags = (input.tags ?: emptyList<String>()).toMutableList())
         .let { repo.save(it) }
         .let { toGql(it) }
@@ -46,8 +46,8 @@ open class GraphEntityService(private val repo: IGraphEntityRepo) {
         input.entityType?.let { v: String -> e.entityType = v }
         input.name?.let { v: String -> e.name = v }
         input.parentId?.let { v: String -> e.parentId = v.toLongId() }
-        input.data?.let { v: String -> e.data = Jsons2.read(v) }
-        input.note?.let { v: String -> e.note = Jsons2.read(v) }
+        input.data?.let { v: String -> e.data = Jsons2.readToMutableMap(v) }
+        input.note?.let { v: String -> e.note = Jsons2.readToMutableMap(v) }
         input.tags?.let { v: List<String> -> e.tags = v.toMutableList() }
         return toGql(repo.save(e))
     }

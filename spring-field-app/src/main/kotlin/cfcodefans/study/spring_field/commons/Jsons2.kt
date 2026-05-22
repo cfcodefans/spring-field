@@ -27,7 +27,7 @@ import java.util.*
 
 /**
  * Jackson 2 ([com.fasterxml.jackson]) twin of [Jsons3] for stacks that still bind JSON via Jackson 2
- * (e.g. Hibernate `SqlTypes.JSON` with `com.fasterxml.jackson.databind.node.ObjectNode`).
+ * (e.g. Hibernate `SqlTypes.JSON` with `Map<String, Any?>` on JPA entities).
  *
  * Registers [JavaTimeModule] for `java.time` types (e.g. [java.time.Instant] on JPA entities).
  * Does not use `jackson-module-kotlin` so the mapper stays aligned with Jackson-2–only stacks.
@@ -101,6 +101,10 @@ object Jsons2 {
             throw RuntimeException("reading json raw", e)
         }
     }
+
+    fun readToMutableMap(raw: String?): MutableMap<String, Any?>? =
+        raw?.trim()?.takeIf { text: String -> text.isNotEmpty() }
+            ?.let { text: String -> readToMap(text)?.toMutableMap() }
 
     /** pretty printer
     <pre> {
