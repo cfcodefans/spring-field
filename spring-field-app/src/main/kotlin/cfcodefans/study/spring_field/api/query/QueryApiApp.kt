@@ -2,7 +2,7 @@ package cfcodefans.study.spring_field.api.query
 
 import cfcodefans.study.spring_field.RepoTestSpringProps
 import cfcodefans.study.spring_field.commons.TrafficLogFilter
-import com.turkraft.springfilter.boot.PageSortAutoConfiguration
+//import com.turkraft.springfilter.boot.PageSortAutoConfiguration
 import jakarta.annotation.PostConstruct
 import jakarta.servlet.annotation.WebFilter
 import org.slf4j.Logger
@@ -21,19 +21,19 @@ import org.springframework.stereotype.Component
 import org.springframework.web.bind.annotation.*
 import org.springframework.web.context.request.WebRequest
 
-@SpringBootApplication(scanBasePackages = [GraphQLWebApp.BASE_PACKAGE],
+@SpringBootApplication(scanBasePackages = [QueryApiApp.BASE_PACKAGE],
                        exclude = [
                            SecurityAutoConfiguration::class,
                            UserDetailsServiceAutoConfiguration::class,
                            ServletWebSecurityAutoConfiguration::class,
                            GraphQlWebMvcSecurityAutoConfiguration::class,
-                           PageSortAutoConfiguration::class,
+//                           PageSortAutoConfiguration::class,
                        ])
 @EnableJpaAuditing
 @SpringBootConfiguration
-open class GraphQLWebApp {
+open class QueryApiApp {
     companion object {
-        val log: Logger = LoggerFactory.getLogger(GraphQLWebApp::class.java)
+        val log: Logger = LoggerFactory.getLogger(QueryApiApp::class.java)
         const val BASE_PACKAGE: String = "cfcodefans.study.spring_field.api.query"
         const val PORT: Int = 8082
     }
@@ -50,10 +50,10 @@ open class GraphQLWebApp {
 }
 
 fun main(args: Array<String>) {
-    SpringApplication.run(GraphQLWebApp::class.java,
+    SpringApplication.run(QueryApiApp::class.java,
                           *args,
                           "--spring.profiles.active=graphql-web",
-                          "--server.port=${GraphQLWebApp.PORT}",
+                          "--server.port=${QueryApiApp.PORT}",
                           "--server.compression.enabled=true",
                           RepoTestSpringProps.ACTIVE_PROFILE_LAB,
                           RepoTestSpringProps.DATASOURCE_URL,
@@ -65,8 +65,9 @@ fun main(args: Array<String>) {
                           RepoTestSpringProps.JPA_SHOW_SQL_FORMAT,
                           RepoTestSpringProps.JPA_OPEN_IN_VIEW,
                           RepoTestSpringProps.JPA_TIME_ZONE,
-                          RepoTestSpringProps.JACKSON_2_DEFAULT,
-                          "spring.http.converters.preferred-json-mapper=jackson2")
+//                          RepoTestSpringProps.JACKSON_2_DEFAULT,
+//                          "spring.http.converters.preferred-json-mapper=jackson2"
+    )
 }
 
 @ControllerAdvice

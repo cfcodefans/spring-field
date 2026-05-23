@@ -1,5 +1,6 @@
 package cfcodefans.study.spring_field.spring.boot
 
+//import com.turkraft.springfilter.boot.PageSortAutoConfiguration
 import org.springdoc.core.configuration.SpringDocConfiguration
 import org.springdoc.webmvc.core.configuration.SpringDocWebMvcConfiguration
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration
@@ -7,17 +8,20 @@ import org.springframework.boot.autoconfigure.jmx.JmxAutoConfiguration
 import org.springframework.boot.data.autoconfigure.metrics.DataRepositoryMetricsAutoConfiguration
 import org.springframework.boot.data.autoconfigure.web.DataWebAutoConfiguration
 import org.springframework.boot.data.jpa.autoconfigure.DataJpaRepositoriesAutoConfiguration
+import org.springframework.boot.graphql.autoconfigure.GraphQlAutoConfiguration
+import org.springframework.boot.graphql.autoconfigure.security.GraphQlWebMvcSecurityAutoConfiguration
 import org.springframework.boot.hibernate.autoconfigure.HibernateJpaAutoConfiguration
 import org.springframework.boot.hibernate.autoconfigure.metrics.HibernateMetricsAutoConfiguration
 import org.springframework.boot.jdbc.autoconfigure.DataSourceAutoConfiguration
 import org.springframework.boot.jdbc.autoconfigure.DataSourceTransactionManagerAutoConfiguration
 import org.springframework.boot.security.autoconfigure.SecurityAutoConfiguration
 import org.springframework.boot.security.autoconfigure.UserDetailsServiceAutoConfiguration
+import org.springframework.boot.security.autoconfigure.web.servlet.ServletWebSecurityAutoConfiguration
+import org.springframework.boot.transaction.autoconfigure.TransactionAutoConfiguration
+import org.springframework.boot.transaction.jta.autoconfigure.JtaAutoConfiguration
 import org.springframework.boot.webmvc.autoconfigure.DispatcherServletAutoConfiguration
 import org.springframework.boot.webmvc.autoconfigure.WebMvcAutoConfiguration
 import org.springframework.boot.webmvc.autoconfigure.error.ErrorMvcAutoConfiguration
-import org.springframework.data.jpa.repository.config.EnableJpaRepositories
-import org.springframework.data.repository.config.BootstrapMode
 import java.lang.annotation.Inherited
 
 /**
@@ -39,6 +43,8 @@ import java.lang.annotation.Inherited
 @EnableAutoConfiguration(exclude = [
     SecurityAutoConfiguration::class,
     UserDetailsServiceAutoConfiguration::class,
+    ServletWebSecurityAutoConfiguration::class,
+    GraphQlWebMvcSecurityAutoConfiguration::class,
 ])
 annotation class AutoCfgWithoutSecurity
 
@@ -55,9 +61,18 @@ annotation class AutoCfgWithoutSecurity
     DataJpaRepositoriesAutoConfiguration::class,
     HibernateMetricsAutoConfiguration::class,
     DataSourceTransactionManagerAutoConfiguration::class,
+
+    TransactionAutoConfiguration::class,
+    JtaAutoConfiguration::class,
+
+    //graph ql related
+    GraphQlAutoConfiguration::class,
+
+//    PageSortAutoConfiguration::class
 ])
-@EnableJpaRepositories(basePackages = [], bootstrapMode = BootstrapMode.DEFERRED)
+//@EnableJpaRepositories(basePackages = [], bootstrapMode = BootstrapMode.DEFERRED)
 annotation class AutoCfgWithoutDataJpa
+
 
 /**
  * Same exclusions as [cfcodefans.study.spring_field.TestContextProfiles.NO_WEB_CONTEXT]

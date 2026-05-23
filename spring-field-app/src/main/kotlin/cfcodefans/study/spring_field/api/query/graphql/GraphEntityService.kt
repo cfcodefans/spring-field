@@ -3,14 +3,20 @@ package cfcodefans.study.spring_field.api.query.graphql
 import cfcodefans.study.spring_field.api.query.GraphEntity
 import cfcodefans.study.spring_field.api.query.IGraphEntityRepo
 import cfcodefans.study.spring_field.commons.Jsons2
+import graphql.scalars.ExtendedScalars
+import graphql.schema.idl.RuntimeWiring
+import org.springframework.context.annotation.Bean
+import org.springframework.context.annotation.Configuration
 import org.springframework.data.domain.Sort
 import org.springframework.data.jpa.domain.Specification
 import org.springframework.data.repository.findByIdOrNull
+import org.springframework.graphql.execution.RuntimeWiringConfigurer
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.time.Instant
 import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
+
 
 @Service
 open class GraphEntityService(private val repo: IGraphEntityRepo) {
@@ -20,14 +26,15 @@ open class GraphEntityService(private val repo: IGraphEntityRepo) {
      * Single list entry point: optional [filter] becomes dynamic `WHERE` clauses (AND).
      * Replaces separate `entitiesByType` / `entitiesByParent`-style operations for study.
      */
-    open fun findWithFilter(filter: GraphEntityFilterInput?): List<GraphEntityGql> {
+    open fun findWithFilter(filter: GraphEntityFilterInput?): List<GraphEntity> {
         val spec: Specification<GraphEntity> = filter.toSpecification()
-        return repo.findAll(spec, Sort.by(Sort.Direction.ASC, "id")).map { row: GraphEntity -> toGql(row) }
+        return repo.findAll(spec, Sort.by(Sort.Direction.ASC, "id"))
+        //.map { row: GraphEntity -> toGql(row) }
     }
 
-    open fun findById(id: Long): GraphEntityGql? = repo
+    open fun findById(id: Long): GraphEntity? = repo
         .findByIdOrNull(id)
-        ?.let { found: GraphEntity -> toGql(found) }
+    // ?.let { found: GraphEntity -> toGql(found) }
 
     @Transactional
     open fun create(input: CreateGraphEntityInput): GraphEntityGql = GraphEntity(entityType = input.entityType,
@@ -220,3 +227,12 @@ private fun escapeLikeLiteral(needle: String): String = needle.lowercase()
     .replace("\\", "\\\\")
     .replace("%", "\\%")
     .replace("_", "\\_")
+
+
+@Configuration
+open class GraphQlConfig {
+    @Bean
+    open fun runtimeWiringConfigurer(): RuntimeWiringConfigurer {
+        return RuntimeWiringConfigurer { wiringBuilder: RuntimeWiring.Builder? -> wiringBuilder!!.scalar(ExtendedScalars.Json) }
+    }
+}

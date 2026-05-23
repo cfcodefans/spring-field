@@ -2,8 +2,8 @@ package cfcodefans.study.spring_field.api.query.spring_filter
 
 import cfcodefans.study.spring_field.api.query.GraphEntity
 import cfcodefans.study.spring_field.api.query.IGraphEntityRepo
-import com.turkraft.springfilter.boot.Fields
-import com.turkraft.springfilter.boot.Filter
+//import com.turkraft.springfilter.boot.Fields
+//import com.turkraft.springfilter.boot.Filter
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
 import org.slf4j.Logger
@@ -25,10 +25,11 @@ open class SpringFilterQueryCtrl(private val repo: IGraphEntityRepo) {
     @GetMapping
     @Operation(summary = "Dynamic entity search engine for AI Bot queries",
                description = "Provides AST mapping using spring-filter over all core paths. Supports a lightweight text fallback over native raw JSON blocks.")
-    @Fields
+//    @Fields
     open fun searchEntities(
             // Automatically injects openapi-documented AST parsing from the "filter" URL parameter
-            @Filter(entityClass = GraphEntity::class) filterSpec: Specification<GraphEntity>?,
+//            @Filter(entityClass = GraphEntity::class)
+            filterSpec: Specification<GraphEntity>?,
 
             // Recovers raw URL string parameter to enforce security constraints
             @Parameter(description = "Raw expression query string to analyze structural safety")

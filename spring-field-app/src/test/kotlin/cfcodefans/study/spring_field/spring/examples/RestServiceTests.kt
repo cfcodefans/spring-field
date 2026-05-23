@@ -61,7 +61,9 @@ open class GSRestServiceApp {
 }
 
 fun main(args: Array<String>) {
-    SpringApplication.run(GSRestServiceApp::class.java, *args)
+    SpringApplication.run(GSRestServiceApp::class.java,
+                          *args,
+                          "--spring.profiles.active=gs-rest")
 }
 
 /**
@@ -74,9 +76,9 @@ fun main(args: Array<String>) {
         webEnvironment = SpringBootTest.WebEnvironment.MOCK,
         useMainMethod = SpringBootTest.UseMainMethod.WHEN_AVAILABLE,
         properties = [
-        RestServiceTestSpringProperties.ACTIVE_PROFILE_LAB,
-        RestServiceTestSpringProperties.SERVLET_CONTEXT_PATH_ROOT,
-    ],
+            RestServiceTestSpringProperties.ACTIVE_PROFILE_LAB,
+            RestServiceTestSpringProperties.SERVLET_CONTEXT_PATH_ROOT,
+        ],
 )
 @AutoConfigureMockMvc(addFilters = false)
 open class RestServiceTests {

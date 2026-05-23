@@ -1,11 +1,14 @@
+scalar JSON
+
+
 type GraphEntity {
   id: ID!
   """Entity classification (e.g. node, edge, person, document)."""
   entityType: String!
   name: String!
   parentId: ID
-  data: String
-  note: String
+  data: JSON
+  note: JSON
   tags: [String!]!
   createdAt: String!
   updatedAt: String!

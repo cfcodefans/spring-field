@@ -28,38 +28,39 @@ open class GraphEntitySpqrService(private val repo: IGraphEntityRepo) {
     private val isoFmt: DateTimeFormatter = DateTimeFormatter.ISO_INSTANT
 
     @GraphQLIgnore
-    open fun findAll(): List<GraphEntityGql> =
-        repo.findAll().map { row: GraphEntity -> toGql(row) }
+    open fun findAll(): List<GraphEntity> =
+        repo.findAll()
+    //.map { row: GraphEntity -> toGql(row) }
 
     @GraphQLIgnore
-    open fun findById(id: Long): GraphEntityGql? =
-        repo.findByIdOrNull(id)?.let { found: GraphEntity -> toGql(found) }
+    open fun findById(id: Long): GraphEntity? =
+        repo.findByIdOrNull(id)
+    //?.let { found: GraphEntity -> toGql(found) }
 
     @GraphQLIgnore
-    open fun findByEntityType(entityType: String): List<GraphEntityGql> =
-        repo.findByEntityType(entityType).map { row: GraphEntity -> toGql(row) }
+    open fun findByEntityType(entityType: String): List<GraphEntity> =
+        repo.findByEntityType(entityType)
+    //.map { row: GraphEntity -> toGql(row) }
 
     @GraphQLIgnore
-    open fun findByParent(parentId: Long?): List<GraphEntityGql> {
+    open fun findByParent(parentId: Long?): List<GraphEntity> {
         val rows: List<GraphEntity> =
             if (parentId == null) repo.findByParentIdIsNull()
             else repo.findByParentId(parentId)
-        return rows.map { row: GraphEntity -> toGql(row) }
+        return rows
+        //.map { row: GraphEntity -> toGql(row) }
     }
 
     @GraphQLIgnore
     @Transactional
-    open fun create(input: CreateGraphEntityInput): GraphEntityGql {
-        val e: GraphEntity = GraphEntity(
-                entityType = input.entityType,
-                name = input.name,
-                parentId = input.parentId?.toLongId(),
-                data = parseJson(input.data),
-                note = parseJson(input.note),
-                tags = (input.tags ?: emptyList<String>()).toMutableList(),
-        )
-        return toGql(repo.save(e))
-    }
+    open fun create(input: CreateGraphEntityInput): GraphEntityGql = GraphEntity(entityType = input.entityType,
+                                                                                 name = input.name,
+                                                                                 parentId = input.parentId?.toLongId(),
+                                                                                 data = parseToMap(input.data),
+                                                                                 note = parseToMap(input.note),
+                                                                                 tags = (input.tags ?: emptyList<String>()).toMutableList())
+        .let { repo.save(it) }
+        .let { toGql(it) }
 
     @GraphQLIgnore
     @Transactional
@@ -69,8 +70,8 @@ open class GraphEntitySpqrService(private val repo: IGraphEntityRepo) {
         input.entityType?.let { v: String -> e.entityType = v }
         input.name?.let { v: String -> e.name = v }
         input.parentId?.let { v: String -> e.parentId = v.toLongId() }
-        input.data?.let { v: String -> e.data = parseJson(v) }
-        input.note?.let { v: String -> e.note = parseJson(v) }
+        input.data?.let { v: String -> e.data = parseToMap(v) }
+        input.note?.let { v: String -> e.note = parseToMap(v) }
         input.tags?.let { v: List<String> -> e.tags = v.toMutableList() }
         return toGql(repo.save(e))
     }
@@ -84,18 +85,18 @@ open class GraphEntitySpqrService(private val repo: IGraphEntityRepo) {
     }
 
     @GraphQLQuery
-    open fun entities(): List<GraphEntityGql> = findAll()
+    open fun entities(): List<GraphEntity> = findAll()
 
     @GraphQLQuery
-    open fun entity(@GraphQLArgument(name = "id") id: String): GraphEntityGql? =
+    open fun entity(@GraphQLArgument(name = "id") id: String): GraphEntity? =
         findById(id.toLongIdRequired())
 
     @GraphQLQuery
-    open fun entitiesByType(@GraphQLArgument(name = "entityType") entityType: String): List<GraphEntityGql> =
+    open fun entitiesByType(@GraphQLArgument(name = "entityType") entityType: String): List<GraphEntity> =
         findByEntityType(entityType)
 
     @GraphQLQuery
-    open fun entitiesByParent(@GraphQLArgument(name = "parentId") parentId: String?): List<GraphEntityGql> =
+    open fun entitiesByParent(@GraphQLArgument(name = "parentId") parentId: String?): List<GraphEntity> =
         findByParent(parentId?.toLongId())
 
 //    @GraphQLMutation
@@ -110,7 +111,7 @@ open class GraphEntitySpqrService(private val repo: IGraphEntityRepo) {
     open fun deleteEntity(@GraphQLArgument(name = "id") id: String): Boolean =
         delete(id.toLongIdRequired())
 
-    private fun parseJson(raw: String?): MutableMap<String, Any?>? = Jsons2.readToMutableMap(raw)
+    private fun parseToMap(raw: String?): MutableMap<String, Any?>? = Jsons2.readToMutableMap(raw)
 
     private fun toGql(e: GraphEntity): GraphEntityGql = GraphEntityGql(
             id = e.id,

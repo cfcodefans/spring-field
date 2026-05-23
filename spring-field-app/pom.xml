@@ -392,6 +392,12 @@
                 </exclusion>
             </exclusions>
         </dependency>
+        <dependency>
+            <groupId>com.graphql-java</groupId>
+            <artifactId>graphql-java-extended-scalars</artifactId>
+            <version>21.0</version> <!-- 请根据你的 graphql-java 版本选择 -->
+        </dependency>
+
         <!-- GraphQL SPQR: runtime schema from annotated services (compare with graphql.standard SDL + @QueryMapping). -->
         <dependency>
             <groupId>io.leangen.graphql</groupId>
@@ -416,14 +422,14 @@
             </exclusions>
         </dependency>
 
-        <!-- Core JPA dynamic specification translation engine -->
+        <!-- Core JPA dynamic specification translation engine
         <dependency>
             <groupId>com.turkraft.springfilter</groupId>
             <artifactId>jpa</artifactId>
             <version>3.2.5</version>
         </dependency>
-
-        <!-- Automatic OpenAPI/Swagger document extension for spring-filter -->
+-->
+        <!-- Automatic OpenAPI/Swagger document extension for spring-filter
         <dependency>
             <groupId>com.turkraft.springfilter</groupId>
             <artifactId>openapi</artifactId>
@@ -433,7 +439,7 @@
             <groupId>com.turkraft.springfilter</groupId>
             <artifactId>page-sort</artifactId>
             <version>3.2.5</version>
-        </dependency>
+        </dependency>-->
 
         <dependency>
             <groupId>org.springdoc</groupId>

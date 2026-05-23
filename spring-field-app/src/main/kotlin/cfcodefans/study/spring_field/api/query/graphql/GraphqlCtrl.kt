@@ -1,5 +1,6 @@
 package cfcodefans.study.spring_field.api.query.graphql
 
+import cfcodefans.study.spring_field.api.query.GraphEntity
 import org.springframework.graphql.data.method.annotation.Argument
 import org.springframework.graphql.data.method.annotation.MutationMapping
 import org.springframework.graphql.data.method.annotation.QueryMapping
@@ -10,11 +11,11 @@ import org.springframework.web.bind.annotation.RequestMapping
 @RequestMapping("/graphql/standard")
 open class GraphqlCtrl(private val service: GraphEntityService) {
     @QueryMapping
-    open fun entities(@Argument(name = "filter") filter: GraphEntityFilterInput?): List<GraphEntityGql> =
+    open fun entities(@Argument(name = "filter") filter: GraphEntityFilterInput?): List<GraphEntity> =
         service.findWithFilter(filter)
 
     @QueryMapping
-    open fun entity(@Argument id: String): GraphEntityGql? =
+    open fun entity(@Argument id: String): GraphEntity? =
         service.findById(id.requireLong("id"))
 
 //    @MutationMapping

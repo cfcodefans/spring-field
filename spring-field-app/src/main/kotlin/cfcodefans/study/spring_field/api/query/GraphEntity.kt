@@ -132,8 +132,9 @@ object FsGraphEntityGenerator {
         return GraphEntityNode(entity = entity, children = children)
     }
 
-    private fun listChildren(directory: Path, root: Path): List<Path> =
-        Files.list(directory).use { stream ->
+    private fun listChildren(directory: Path, root: Path): List<Path> = Files
+        .list(directory)
+        .use { stream ->
             stream
                 .filter { path: Path -> shouldInclude(path, root) }
                 .sorted(compareBy { path: Path -> path.toString() })
@@ -149,9 +150,7 @@ object FsGraphEntityGenerator {
         }
         if (underSkippedDir == true) return false
         return try {
-            val isDirectory: Boolean = Files.isDirectory(path)
-            val isRegularFile: Boolean = Files.isRegularFile(path)
-            isDirectory || isRegularFile
+            Files.isDirectory(path) || Files.isRegularFile(path)
         } catch (_: IOException) {
             false
         }
@@ -171,27 +170,28 @@ object FsGraphEntityGenerator {
         val entityType: String = if (directory) "directory" else "file"
         val tags: MutableList<String> = mutableListOf("fs-seed")
         if (!directory) {
-            val extension: String? = path.extension.takeIf { ext: String -> ext.isNotEmpty() }
-            extension?.let { ext: String -> tags.add("ext:$ext") }
+            path.extension
+                .takeIf { ext: String -> ext.isNotEmpty() }
+                ?.let { ext: String -> tags.add("ext:$ext") }
         }
         val data: MutableMap<String, Any?> = hashMapOf<String, Any?>()
             .apply {
                 put("path", root.relativize(path).toString().replace('\\', '/'))
-                if (directory) {
-                    put("entryKind", "directory")
-                } else {
-                    val sizeBytes: Long? = runCatching { Files.size(path) }.getOrNull()
-                    sizeBytes?.let { bytes: Long -> put("sizeBytes", bytes) }
-                    put("entryKind", "file")
+                put("entryKind", entityType)
+                if (directory.not()) {
+                    runCatching { Files.size(path) }
+                        .getOrNull()
+                        ?.let { bytes: Long -> put("sizeBytes", bytes) }
                 }
+                put("attrs", Files.readAttributes(path, "*").mapValues { en -> en.value?.toString() })
             }
-        return GraphEntity(
-                entityType = entityType,
-                name = path.fileName.toString(),
-                parentId = null,
-                lineage = lineageSegments(path, root),
-                data = data,
-                tags = tags,
-        )
+        val lineage: MutableList<String>? = lineageSegments(path, root)
+        return GraphEntity(entityType = entityType,
+                           name = path.fileName.toString(),
+                           parentId = null,
+                           lineage = lineage,
+                           data = data,
+                           note = mutableMapOf("layer" to (lineage?.size ?: 0)),
+                           tags = tags)
     }
 }

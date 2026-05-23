@@ -1,6 +1,6 @@
 package cfcodefans.study.spring_field.api.query.graphql
 
-import cfcodefans.study.spring_field.api.query.GraphQLWebApp
+import cfcodefans.study.spring_field.api.query.QueryApiApp
 import org.hamcrest.Matchers.greaterThan
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
@@ -12,7 +12,7 @@ import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.*
 
-@SpringBootTest(classes = [GraphQLWebApp::class], webEnvironment = SpringBootTest.WebEnvironment.MOCK)
+@SpringBootTest(classes = [QueryApiApp::class], webEnvironment = SpringBootTest.WebEnvironment.MOCK)
 @AutoConfigureMockMvc
 @ActiveProfiles("graphql-web")
 class StandardODataApiTests {
